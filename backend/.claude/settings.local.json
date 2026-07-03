@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Read(//tmp/**)",
+      "Bash('/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe' -h127.0.0.1 -uroot -pRams@1234 rideshare -e ' *)",
+      "Bash($MYSQL *)"
+    ]
+  }
+}

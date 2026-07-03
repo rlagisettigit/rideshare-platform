@@ -1,0 +1,315 @@
+/* ==========================================================================
+   Design tokens — "Waypoint" visual identity
+   Subject: a routing platform. The signature motif is the route line — a
+   dashed path connecting two points — echoed in dividers, cards, and the
+   nav rail's active-state indicator.
+   ========================================================================== */
+
+:root {
+  /* Color: asphalt + route-indigo + signal-amber, named for what they are */
+  --color-ink: #14171f;           /* asphalt - primary text, dark surfaces */
+  --color-paper: #f7f5f1;         /* page background, warm off-white */
+  --color-surface: #ffffff;       /* card surfaces */
+  --color-route: #2f3c7e;         /* route indigo - primary actions, links */
+  --color-route-dark: #232d61;
+  --color-signal: #f2a93b;        /* signal amber - accent, highlights */
+  --color-moss: #3f7a5d;          /* verified / success / active */
+  --color-rust: #b5443a;          /* cancelled / error */
+  --color-line: #e4e0d8;          /* hairline borders on paper */
+  --color-muted: #6b6f7b;         /* secondary text */
+
+  /* Type: Space Grotesk (display, technical/geometric) + Inter (body) + JetBrains Mono (data) */
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --nav-width: 240px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0 0 var(--space-2);
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+
+p { margin: 0 0 var(--space-3); color: var(--color-muted); line-height: 1.55; }
+
+a { color: var(--color-route); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, input, select, textarea { font-family: inherit; font-size: var(--text-base); }
+
+/* Focus visibility (accessibility floor) */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---- Layout shell ---- */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.nav-rail {
+  width: var(--nav-width);
+  flex-shrink: 0;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-4);
+}
+
+.nav-brand {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  color: var(--color-paper);
+}
+
+.nav-brand .dot { color: var(--color-signal); }
+
+.nav-links { display: flex; flex-direction: column; gap: 2px; }
+
+.nav-link {
+  display: block;
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: #c8cad6;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  position: relative;
+  text-decoration: none;
+}
+
+.nav-link:hover { background: rgba(255,255,255,0.06); color: var(--color-paper); text-decoration: none; }
+
+.nav-link.active {
+  background: rgba(242,169,59,0.1);
+  color: var(--color-paper);
+}
+
+.nav-link.active::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background: var(--color-signal);
+  border-radius: 2px;
+}
+
+.nav-footer {
+  margin-top: auto;
+  font-size: var(--text-xs);
+  color: #6b6f7b;
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--space-6) var(--space-8);
+  max-width: 1100px;
+}
+
+/* ---- Card ---- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+/* ---- Route line motif: origin --- (dashed) --- destination ---- */
+.route-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.route-line .stop {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.route-line .path {
+  flex: 1;
+  height: 0;
+  border-top: 2px dashed var(--color-line);
+  position: relative;
+  min-width: 24px;
+}
+
+.route-line .path::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-signal);
+}
+
+.route-line .path::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-route);
+}
+
+/* ---- Form elements ---- */
+.field { margin-bottom: var(--space-4); }
+.field label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+  color: var(--color-ink);
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--color-route);
+}
+
+.field-row { display: flex; gap: var(--space-4); }
+.field-row .field { flex: 1; }
+
+.checkbox-field { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.checkbox-field input { width: auto; }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--color-route); color: white; }
+.btn-primary:hover { background: var(--color-route-dark); }
+
+.btn-secondary { background: transparent; border-color: var(--color-line); color: var(--color-ink); }
+.btn-secondary:hover { background: var(--color-paper); }
+
+.btn-danger { background: var(--color-rust); color: white; }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-active { background: rgba(63,122,93,0.12); color: var(--color-moss); }
+.badge-pending { background: rgba(242,169,59,0.15); color: #a06c1c; }
+.badge-cancelled { background: rgba(181,68,58,0.12); color: var(--color-rust); }
+
+/* ---- Utility ---- */
+.stack { display: flex; flex-direction: column; gap: var(--space-4); }
+.row { display: flex; align-items: center; gap: var(--space-3); }
+.between { display: flex; align-items: center; justify-content: space-between; }
+.muted { color: var(--color-muted); font-size: var(--text-sm); }
+.mono { font-family: var(--font-mono); }
+.error-text { color: var(--color-rust); font-size: var(--text-sm); margin-top: var(--space-2); }
+.field-error { color: var(--color-rust); font-size: var(--text-sm); margin-top: var(--space-1); }
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-muted);
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-ink);
+}
+
+.auth-card {
+  width: 380px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
