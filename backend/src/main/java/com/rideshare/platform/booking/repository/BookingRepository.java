@@ -19,4 +19,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /** FR: "No duplicate booking" - checks for an existing active booking by this passenger on this ride. */
     boolean existsByRideIdAndPassengerIdAndStatusIn(Long rideId, Long passengerId, List<BookingStatus> statuses);
+
+    /** Used to confirm a driver<->passenger review is between two people who actually completed a ride together. */
+    boolean existsByRideIdAndPassengerIdAndStatus(Long rideId, Long passengerId, BookingStatus status);
 }

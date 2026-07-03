@@ -11,6 +11,7 @@ import DriverDashboard from "./pages/DriverDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Notifications from "./pages/Notifications";
 import Payments from "./pages/Payments";
+import Ratings from "./pages/Ratings";
 
 function AppShell({ children }) {
   return (
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/bookings" element={<Protected><MyBookings /></Protected>} />
           <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
           <Route path="/payments" element={<Protected><Payments /></Protected>} />
+          <Route path="/ratings" element={<Protected><Ratings /></Protected>} />
           <Route path="/driver" element={<Protected><DriverDashboard /></Protected>} />
           <Route path="/admin" element={<Protected><AdminDashboard /></Protected>} />
           <Route path="/" element={<RootRedirect />} />

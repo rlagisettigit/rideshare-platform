@@ -5,6 +5,7 @@ const LINKS = [
   { to: "/search", label: "Find a ride" },
   { to: "/bookings", label: "My bookings" },
   { to: "/payments", label: "Payments" },
+  { to: "/ratings", label: "Ratings" },
   { to: "/notifications", label: "Notifications" },
   { to: "/publish", label: "Publish a ride" },
   { to: "/driver", label: "Driver dashboard" },
