@@ -37,9 +37,11 @@ import java.util.Locale;
  * here if the actual response differs. Failures are logged rather than silently swallowed
  * so a schema mismatch is easy to spot once tested.
  *
- * Deliberately separate from the ride publish/search pipeline (RouteService,
- * MapplsRoutingProvider), which stays free of live API calls - this is only invoked when a
- * driver explicitly asks to preview route options before publishing.
+ * Also backs RouteService's default publish-time route (see fastestRouteSafe): if a driver
+ * publishes without previewing/selecting a route themselves, RouteService still fetches one
+ * real Mappls route automatically - the same single-call cost as the preview button - and
+ * only falls back to MapplsRoutingProvider's local straight-line interpolation if that call
+ * itself fails (missing credentials, Mappls outage, no route found).
  */
 @Service
 public class RoutePreviewService {
@@ -103,6 +105,24 @@ public class RoutePreviewService {
             options.add(new RouteOption(label, (int) route.distance(), (int) route.duration(), false, List.of(), route.geometry()));
         }
         return options;
+    }
+
+    /**
+     * Best-effort single-route fetch for ride publish when the driver didn't preview/select
+     * one themselves. Unlike {@link #previewRoutes}, this never throws - any failure (missing
+     * credentials, Mappls outage, no routes found) returns empty so the caller can fall back
+     * to the local straight-line interpolation instead of blocking the publish.
+     */
+    public Optional<RouteOption> fastestRouteSafe(double originLat, double originLng, double destLat, double destLng) {
+        if (clientId == null || clientId.isBlank() || clientSecret == null || clientSecret.isBlank()) {
+            return Optional.empty();
+        }
+        List<MapplsRoute> routes = fetchRoutes(originLat, originLng, destLat, destLng, false);
+        if (routes.isEmpty()) {
+            return Optional.empty();
+        }
+        MapplsRoute route = routes.get(0);
+        return Optional.of(new RouteOption("FASTEST", (int) route.distance(), (int) route.duration(), false, List.of(), route.geometry()));
     }
 
     /** On-demand: resolves the major cities/towns along one specific previewed route. */

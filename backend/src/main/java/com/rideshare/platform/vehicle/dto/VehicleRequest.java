@@ -11,6 +11,7 @@ public record VehicleRequest(
         @NotBlank String vehicleNumber,
         String brand,
         String model,
+        String category,
         String fuelType,
         String transmission,
         String color,

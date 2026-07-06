@@ -88,4 +88,10 @@ public class Ride extends BaseEntity {
 
     @Column(name = "actual_end_time")
     private LocalDateTime actualEndTime;
+
+    /** Set when this ride was generated from a RecurringRide series; plain id rather than a
+     *  relation, matching the lighter-weight "reference" pattern already used elsewhere
+     *  (e.g. RideRoutePoint.rideId) instead of a full @ManyToOne back-reference. */
+    @Column(name = "recurring_ride_id")
+    private Long recurringRideId;
 }

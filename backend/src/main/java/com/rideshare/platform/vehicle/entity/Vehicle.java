@@ -24,6 +24,7 @@ public class Vehicle extends BaseEntity {
 
     private String brand;
     private String model;
+    private String category;
 
     @Column(name = "fuel_type")
     private String fuelType;

@@ -16,5 +16,6 @@ public record RideResponse(
         boolean womenOnly,
         boolean petsAllowed,
         boolean luggageAllowed,
-        String status
+        String status,
+        String recurringRidePublicId
 ) {}

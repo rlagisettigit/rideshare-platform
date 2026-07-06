@@ -7,3 +7,4 @@ export const cancelRide = (publicId) => client.post(`/rides/${publicId}/cancel`)
 export const startRide = (publicId) => client.post(`/rides/${publicId}/start`);
 export const finishRide = (publicId) => client.post(`/rides/${publicId}/finish`);
 export const searchRides = (payload) => client.post("/search/rides", payload);
+export const getRideStops = (publicId) => client.get(`/rides/${publicId}/stops`);

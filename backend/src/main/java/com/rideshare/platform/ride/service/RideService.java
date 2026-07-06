@@ -10,8 +10,10 @@ import com.rideshare.platform.kafka.events.RidePublishedEvent;
 import com.rideshare.platform.kafka.events.RideStartedEvent;
 import com.rideshare.platform.ride.dto.RideCreateRequest;
 import com.rideshare.platform.ride.dto.RideResponse;
+import com.rideshare.platform.ride.dto.RideStopPlanResponse;
 import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.entity.RideStatus;
+import com.rideshare.platform.ride.repository.RecurringRideRepository;
 import com.rideshare.platform.ride.repository.RideRepository;
 import com.rideshare.platform.route.service.RouteService;
 import com.rideshare.platform.vehicle.entity.Vehicle;
@@ -39,6 +41,8 @@ public class RideService {
     private final VehicleService vehicleService;
     private final RouteService routeService;
     private final BookingService bookingService;
+    private final RecurringRideRepository recurringRideRepository;
+    private final RideStopPlanningService rideStopPlanningService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
@@ -146,6 +150,7 @@ public class RideService {
         ride.setStatus(RideStatus.CANCELLED);
         rideRepository.save(ride);
         routeService.removeRouteIndex(ride.getId());
+        bookingService.cancelBookingsForRide(ride.getId());
         return toResponse(ride);
     }
 
@@ -166,8 +171,18 @@ public class RideService {
         ride.setActualStartTime(LocalDateTime.now());
         rideRepository.save(ride);
 
+        // FR: Pickup/Drop-off Ordering - reorders confirmed passengers into the most efficient
+        // visiting sequence rather than booking order, so the driver has a plan the moment the
+        // trip starts.
+        rideStopPlanningService.planAndPersist(ride, userPublicId);
+
         publishAfterCommit(KafkaTopics.RIDE_STARTED, new RideStartedEvent(ride.getPublicId()));
         return toResponse(ride);
+    }
+
+    @Transactional(readOnly = true)
+    public RideStopPlanResponse getStopPlan(String userPublicId, String ridePublicId) {
+        return rideStopPlanningService.getStopPlan(userPublicId, ridePublicId);
     }
 
     /** Driver marks the trip as finished: completes every confirmed booking (settling fare and
@@ -213,6 +228,8 @@ public class RideService {
     }
 
     private RideResponse toResponse(Ride r) {
+        String recurringRidePublicId = r.getRecurringRideId() == null ? null
+                : recurringRideRepository.findById(r.getRecurringRideId()).map(rr -> rr.getPublicId()).orElse(null);
         return new RideResponse(
                 r.getPublicId(),
                 r.getDriver().getUser().getName(),
@@ -226,7 +243,8 @@ public class RideService {
                 r.isWomenOnly(),
                 r.isPetsAllowed(),
                 r.isLuggageAllowed(),
-                r.getStatus().name()
+                r.getStatus().name(),
+                recurringRidePublicId
         );
     }
 }

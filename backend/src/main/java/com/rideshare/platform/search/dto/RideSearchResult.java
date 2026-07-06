@@ -15,5 +15,6 @@ public record RideSearchResult(
         double pickupDistanceKm,
         double detourKm,
         int pickupSequenceNo,
-        int dropSequenceNo
+        int dropSequenceNo,
+        String recurringRidePublicId
 ) {}

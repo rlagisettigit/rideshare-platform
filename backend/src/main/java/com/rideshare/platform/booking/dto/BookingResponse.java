@@ -10,10 +10,17 @@ public record BookingResponse(
         int seatsBooked,
         BigDecimal fare,
         String pickupAddress,
+        double pickupLat,
+        double pickupLng,
         String dropAddress,
+        double dropLat,
+        double dropLng,
         String passengerName,
+        String passengerUserPublicId,
         String rideOriginAddress,
         String rideDestinationAddress,
         LocalDateTime rideDepartureAt,
-        String rideStatus
+        String rideStatus,
+        String bookingBatchId,
+        String recurringRidePublicId
 ) {}

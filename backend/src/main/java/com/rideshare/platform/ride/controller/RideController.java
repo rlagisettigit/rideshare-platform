@@ -3,6 +3,7 @@ package com.rideshare.platform.ride.controller;
 import com.rideshare.platform.common.ApiResponse;
 import com.rideshare.platform.ride.dto.RideCreateRequest;
 import com.rideshare.platform.ride.dto.RideResponse;
+import com.rideshare.platform.ride.dto.RideStopPlanResponse;
 import com.rideshare.platform.ride.service.RideService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -55,5 +56,13 @@ public class RideController {
     public ApiResponse<RideResponse> finish(@AuthenticationPrincipal String userPublicId,
                                              @PathVariable String publicId) {
         return ApiResponse.ok(rideService.finish(userPublicId, publicId), "Ride completed.");
+    }
+
+    /** FR: Pickup/Drop-off Ordering - the optimized stop plan computed when the driver started
+     *  the ride. Visible to the driver and to any of the ride's confirmed passengers. */
+    @GetMapping("/{publicId}/stops")
+    public ApiResponse<RideStopPlanResponse> stops(@AuthenticationPrincipal String userPublicId,
+                                                    @PathVariable String publicId) {
+        return ApiResponse.ok(rideService.getStopPlan(userPublicId, publicId));
     }
 }

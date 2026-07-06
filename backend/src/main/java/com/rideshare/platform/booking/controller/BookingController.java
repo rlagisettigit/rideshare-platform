@@ -1,10 +1,12 @@
 package com.rideshare.platform.booking.controller;
 
+import com.rideshare.platform.booking.dto.BookingBatchSummary;
 import com.rideshare.platform.booking.dto.BookingCreateRequest;
 import com.rideshare.platform.booking.dto.BookingResponse;
 import com.rideshare.platform.booking.dto.CancelBookingRequest;
 import com.rideshare.platform.booking.service.BookingService;
 import com.rideshare.platform.common.ApiResponse;
+import com.rideshare.platform.ride.service.RecurringRideService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final RecurringRideService recurringRideService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -40,6 +43,19 @@ public class BookingController {
     public ApiResponse<BookingResponse> reject(@AuthenticationPrincipal String driverPublicId,
                                                 @PathVariable String publicId) {
         return ApiResponse.ok(bookingService.respondToBooking(driverPublicId, publicId, false), "Booking rejected.");
+    }
+
+    /** Accepts/rejects every booking created together via "book all upcoming occurrences" in one action. */
+    @PostMapping("/batch/{batchId}/accept")
+    public ApiResponse<BookingBatchSummary> acceptBatch(@AuthenticationPrincipal String driverPublicId,
+                                                         @PathVariable String batchId) {
+        return ApiResponse.ok(recurringRideService.respondToBatch(driverPublicId, batchId, true), "Batch confirmed.");
+    }
+
+    @PostMapping("/batch/{batchId}/reject")
+    public ApiResponse<BookingBatchSummary> rejectBatch(@AuthenticationPrincipal String driverPublicId,
+                                                         @PathVariable String batchId) {
+        return ApiResponse.ok(recurringRideService.respondToBatch(driverPublicId, batchId, false), "Batch rejected.");
     }
 
     @PostMapping("/{publicId}/cancel")

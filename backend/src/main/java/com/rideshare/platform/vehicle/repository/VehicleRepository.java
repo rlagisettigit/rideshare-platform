@@ -10,4 +10,5 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByDriverId(Long driverId);
     Optional<Vehicle> findByVehicleNumber(String vehicleNumber);
     boolean existsByVehicleNumber(String vehicleNumber);
+    boolean existsByVehicleNumberAndIdNot(String vehicleNumber, Long id);
 }

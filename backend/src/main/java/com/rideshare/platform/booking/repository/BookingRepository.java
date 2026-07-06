@@ -22,4 +22,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /** Used to confirm a driver<->passenger review is between two people who actually completed a ride together. */
     boolean existsByRideIdAndPassengerIdAndStatus(Long rideId, Long passengerId, BookingStatus status);
+
+    /** All bookings created together via "book all upcoming occurrences" on a recurring ride.
+     *  Ride is join-fetched since the caller (RecurringRideService.respondToBatch) reads
+     *  b.getRide().getDepartureDate() outside of a transaction, between independent per-item
+     *  calls to BookingService.respondToBooking(). */
+    @Query("select b from Booking b join fetch b.ride where b.bookingBatchId = :bookingBatchId order by b.createdAt asc")
+    List<Booking> findByBookingBatchIdOrderByCreatedAtAsc(String bookingBatchId);
 }

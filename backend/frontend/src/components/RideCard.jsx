@@ -6,6 +6,7 @@ export default function RideCard({ ride, action }) {
           <div className="row" style={{ marginBottom: 4 }}>
             <strong>{ride.driverName}</strong>
             {ride.driverRating != null && <span className="muted mono">★ {ride.driverRating.toFixed(1)}</span>}
+            {ride.recurringRidePublicId && <span className="badge badge-active">Recurring</span>}
           </div>
           <span className="muted">{ride.vehicleModel}</span>
         </div>

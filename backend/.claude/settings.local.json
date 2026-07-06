@@ -4,7 +4,9 @@
       "mcp__ide__getDiagnostics",
       "Read(//tmp/**)",
       "Bash('/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe' -h127.0.0.1 -uroot -pRams@1234 rideshare -e ' *)",
-      "Bash($MYSQL *)"
+      "Bash($MYSQL *)",
+      "Bash(JAVA_HOME=/c/Users/lagis/.jdks/ms-21.0.11 PATH=/c/Users/lagis/.jdks/ms-21.0.11/bin:__TRACKED_VAR__ mvn -q -o compile)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

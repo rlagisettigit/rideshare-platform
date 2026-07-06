@@ -35,7 +35,10 @@ public class DriverService {
         driver.setGovernmentIdDocUrl(request.governmentIdDocUrl());
         driver.setAddressProofDocUrl(request.addressProofDocUrl());
         driver.setSelfieDocUrl(request.selfieDocUrl());
-        driver.setStatus(DriverStatus.PENDING); // re-submission always resets to PENDING for re-verification
+        // TEMPORARY: admin review UI/role isn't built yet, so auto-verify drivers at onboarding
+        // to unblock going online/publishing rides. Revert to DriverStatus.PENDING once the
+        // admin approval flow ships.
+        driver.setStatus(DriverStatus.VERIFIED);
 
         user.setRoleDriver(true);
         userRepository.save(user);

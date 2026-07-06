@@ -10,11 +10,14 @@ import com.rideshare.platform.common.exception.ApiException;
 import com.rideshare.platform.config.KafkaTopics;
 import com.rideshare.platform.driver.entity.Driver;
 import com.rideshare.platform.driver.service.DriverService;
+import com.rideshare.platform.kafka.events.BookingAcceptedEvent;
 import com.rideshare.platform.kafka.events.BookingCancelledEvent;
+import com.rideshare.platform.kafka.events.BookingRejectedEvent;
 import com.rideshare.platform.kafka.events.BookingRequestedEvent;
 import com.rideshare.platform.payment.service.PaymentService;
 import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.entity.RideStatus;
+import com.rideshare.platform.ride.repository.RecurringRideRepository;
 import com.rideshare.platform.ride.repository.RideRepository;
 import com.rideshare.platform.route.entity.RideRoutePoint;
 import com.rideshare.platform.route.repository.RideRoutePointRepository;
@@ -43,6 +46,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final RideRepository rideRepository;
+    private final RecurringRideRepository recurringRideRepository;
     private final UserRepository userRepository;
     private final RideRoutePointRepository rideRoutePointRepository;
     private final H3Service h3Service;
@@ -55,6 +59,17 @@ public class BookingService {
 
     @Transactional
     public BookingResponse createBooking(String userPublicId, BookingCreateRequest request) {
+        return createBooking(userPublicId, request, null);
+    }
+
+    /**
+     * @param bookingBatchId set by RecurringRideService.bookAll() to correlate every booking
+     *                       created in one "book all upcoming occurrences" action, so the
+     *                       driver can accept/reject the whole batch together; null for a
+     *                       normal single-ride booking.
+     */
+    @Transactional
+    public BookingResponse createBooking(String userPublicId, BookingCreateRequest request, String bookingBatchId) {
         User passenger = userRepository.findByPublicId(userPublicId)
                 .orElseThrow(() -> ApiException.notFound("USER_001", "User not found."));
 
@@ -102,6 +117,7 @@ public class BookingService {
         booking.setSeatsBooked(request.seats());
         booking.setFare(fare);
         booking.setStatus(BookingStatus.PENDING);
+        booking.setBookingBatchId(bookingBatchId);
         bookingRepository.save(booking);
 
         kafkaTemplate.send(KafkaTopics.BOOKING_REQUESTED,
@@ -129,6 +145,16 @@ public class BookingService {
             restoreSeats(booking);
         }
         bookingRepository.save(booking);
+
+        String passengerPublicId = booking.getPassenger().getPublicId();
+        if (accept) {
+            kafkaTemplate.send(KafkaTopics.BOOKING_ACCEPTED,
+                    new BookingAcceptedEvent(booking.getPublicId(), booking.getRide().getPublicId(), passengerPublicId));
+        } else {
+            kafkaTemplate.send(KafkaTopics.BOOKING_REJECTED,
+                    new BookingRejectedEvent(booking.getPublicId(), booking.getRide().getPublicId(), passengerPublicId));
+        }
+
         return toResponse(booking);
     }
 
@@ -215,6 +241,28 @@ public class BookingService {
         }
     }
 
+    /**
+     * Called by RideService.cancel() when a driver cancels an entire ride: cancels every
+     * booking still awaiting a response or already confirmed, restores seats, and fires
+     * BOOKING_CANCELLED per booking so affected passengers get notified.
+     */
+    @Transactional
+    public void cancelBookingsForRide(Long rideId) {
+        for (Booking booking : bookingRepository.findByRideId(rideId)) {
+            if (booking.getStatus() == BookingStatus.PENDING || booking.getStatus() == BookingStatus.CONFIRMED) {
+                booking.setStatus(BookingStatus.CANCELLED);
+                booking.setCancelledBy("DRIVER");
+                booking.setCancellationReason("The driver cancelled this ride.");
+                restoreSeats(booking);
+                bookingRepository.save(booking);
+
+                kafkaTemplate.send(KafkaTopics.BOOKING_CANCELLED,
+                        new BookingCancelledEvent(booking.getPublicId(), booking.getRide().getPublicId(),
+                                booking.getCancelledBy(), booking.getCancellationReason()));
+            }
+        }
+    }
+
     private void restoreSeats(Booking booking) {
         Ride ride = rideRepository.findByIdForUpdate(booking.getRide().getId())
                 .orElseThrow(() -> ApiException.notFound("RIDE_006", "Ride not found."));
@@ -240,9 +288,14 @@ public class BookingService {
     }
 
     private BookingResponse toResponse(Booking b) {
+        Long recurringRideId = b.getRide().getRecurringRideId();
+        String recurringRidePublicId = recurringRideId == null ? null
+                : recurringRideRepository.findById(recurringRideId).map(rr -> rr.getPublicId()).orElse(null);
         return new BookingResponse(b.getPublicId(), b.getRide().getPublicId(), b.getStatus().name(),
-                b.getSeatsBooked(), b.getFare(), b.getPickupAddress(), b.getDropAddress(),
-                b.getPassenger().getName(), b.getRide().getOriginAddress(), b.getRide().getDestinationAddress(),
-                b.getRide().getDepartureAt(), b.getRide().getStatus().name());
+                b.getSeatsBooked(), b.getFare(), b.getPickupAddress(), b.getPickupLat(), b.getPickupLng(),
+                b.getDropAddress(), b.getDropLat(), b.getDropLng(),
+                b.getPassenger().getName(), b.getPassenger().getPublicId(), b.getRide().getOriginAddress(),
+                b.getRide().getDestinationAddress(), b.getRide().getDepartureAt(), b.getRide().getStatus().name(),
+                b.getBookingBatchId(), recurringRidePublicId);
     }
 }

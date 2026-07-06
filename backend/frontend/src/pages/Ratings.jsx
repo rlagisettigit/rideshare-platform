@@ -1,27 +1,11 @@
 import { useEffect, useState } from "react";
-import { getPendingReviews, getReceivedReviews, submitReview } from "../api/reviews";
-import Modal from "../components/Modal";
+import { getPendingReviews, getReceivedReviews } from "../api/reviews";
+import RatingModal from "../components/RatingModal";
 
 const DIRECTION_LABEL = {
   RATE_DRIVER: "Rate your driver",
   RATE_PASSENGER: "Rate your passenger"
 };
-
-function StarPicker({ value, onChange }) {
-  return (
-    <div className="row" style={{ gap: 4 }}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span
-          key={n}
-          onClick={() => onChange(n)}
-          style={{ cursor: "pointer", fontSize: 28, color: n <= value ? "var(--color-signal)" : "var(--color-line)" }}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
 
 export default function Ratings() {
   const [pending, setPending] = useState([]);
@@ -29,10 +13,6 @@ export default function Ratings() {
   const [received, setReceived] = useState([]);
   const [receivedError, setReceivedError] = useState(null);
   const [target, setTarget] = useState(null);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
 
   const loadPending = () => {
     setPendingError(null);
@@ -50,34 +30,13 @@ export default function Ratings() {
   useEffect(() => { loadPending(); loadReceived(); }, []);
 
   const openRatingModal = (item) => {
-    setTarget(item);
-    setRating(0);
-    setComment("");
-    setSubmitError(null);
+    setTarget({ ...item, title: DIRECTION_LABEL[item.direction] ?? "Rate" });
   };
 
-  const handleSubmit = async () => {
-    if (rating < 1) {
-      setSubmitError("Please select a star rating.");
-      return;
-    }
-    setSubmitting(true);
-    setSubmitError(null);
-    try {
-      await submitReview({
-        ridePublicId: target.ridePublicId,
-        revieweeUserPublicId: target.revieweeUserPublicId,
-        rating,
-        comment
-      });
-      setTarget(null);
-      loadPending();
-      loadReceived();
-    } catch (err) {
-      setSubmitError(err?.message ?? "Could not submit rating.");
-    } finally {
-      setSubmitting(false);
-    }
+  const handleSubmitted = () => {
+    setTarget(null);
+    loadPending();
+    loadReceived();
   };
 
   const avgRating = received.length
@@ -139,20 +98,7 @@ export default function Ratings() {
       </div>
 
       {target && (
-        <Modal title={DIRECTION_LABEL[target.direction] ?? "Rate"} onClose={() => setTarget(null)}>
-          <div className="stack">
-            <p className="muted" style={{ marginBottom: 0 }}>{target.revieweeName}</p>
-            <StarPicker value={rating} onChange={setRating} />
-            <div className="field">
-              <label>Comment (optional)</label>
-              <textarea rows="3" value={comment} onChange={(e) => setComment(e.target.value)} />
-            </div>
-            {submitError && <div className="error-text">{submitError}</div>}
-            <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Submitting…" : "Submit rating"}
-            </button>
-          </div>
-        </Modal>
+        <RatingModal target={target} onClose={() => setTarget(null)} onSubmitted={handleSubmitted} />
       )}
     </div>
   );

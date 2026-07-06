@@ -6,6 +6,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RideSearch from "./pages/RideSearch";
 import RidePublish from "./pages/RidePublish";
+import RecurringRides from "./pages/RecurringRides";
+import RecurringRideActivity from "./pages/RecurringRideActivity";
 import MyBookings from "./pages/MyBookings";
 import DriverDashboard from "./pages/DriverDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -44,6 +46,8 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/search" element={<Protected><RideSearch /></Protected>} />
           <Route path="/publish" element={<Protected><RidePublish /></Protected>} />
+          <Route path="/recurring-rides" element={<Protected><RecurringRideActivity /></Protected>} />
+          <Route path="/recurring-rides/publish" element={<Protected><RecurringRides /></Protected>} />
           <Route path="/bookings" element={<Protected><MyBookings /></Protected>} />
           <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
           <Route path="/payments" element={<Protected><Payments /></Protected>} />

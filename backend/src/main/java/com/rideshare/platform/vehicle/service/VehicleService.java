@@ -3,6 +3,7 @@ package com.rideshare.platform.vehicle.service;
 import com.rideshare.platform.common.exception.ApiException;
 import com.rideshare.platform.driver.entity.Driver;
 import com.rideshare.platform.driver.repository.DriverRepository;
+import com.rideshare.platform.ride.repository.RideRepository;
 import com.rideshare.platform.vehicle.dto.VehicleRequest;
 import com.rideshare.platform.vehicle.dto.VehicleResponse;
 import com.rideshare.platform.vehicle.entity.Vehicle;
@@ -21,6 +22,7 @@ public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final DriverRepository driverRepository;
+    private final RideRepository rideRepository;
 
     @Transactional
     public VehicleResponse register(String userPublicId, VehicleRequest request) {
@@ -35,6 +37,7 @@ public class VehicleService {
         vehicle.setVehicleNumber(request.vehicleNumber());
         vehicle.setBrand(request.brand());
         vehicle.setModel(request.model());
+        vehicle.setCategory(request.category());
         vehicle.setFuelType(request.fuelType());
         vehicle.setTransmission(request.transmission());
         vehicle.setColor(request.color());
@@ -54,6 +57,47 @@ public class VehicleService {
         Driver driver = driverRepository.findByUserPublicId(userPublicId)
                 .orElseThrow(() -> ApiException.notFound("DRIVER_001", "Driver profile not found."));
         return vehicleRepository.findByDriverId(driver.getId()).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
+    public VehicleResponse update(String userPublicId, Long vehicleId, VehicleRequest request) {
+        Vehicle vehicle = ownedVehicle(userPublicId, vehicleId);
+        if (!vehicle.getVehicleNumber().equals(request.vehicleNumber())
+                && vehicleRepository.existsByVehicleNumberAndIdNot(request.vehicleNumber(), vehicleId)) {
+            throw ApiException.conflict("VEHICLE_001", "Vehicle number already registered.");
+        }
+
+        vehicle.setVehicleNumber(request.vehicleNumber());
+        vehicle.setBrand(request.brand());
+        vehicle.setModel(request.model());
+        vehicle.setCategory(request.category());
+        vehicle.setFuelType(request.fuelType());
+        vehicle.setTransmission(request.transmission());
+        vehicle.setColor(request.color());
+        vehicle.setSeatingCapacity(request.seatingCapacity());
+        vehicle.setInsuranceExpiry(request.insuranceExpiry());
+        vehicle.setRegistrationExpiry(request.registrationExpiry());
+
+        vehicleRepository.save(vehicle);
+        return toResponse(vehicle);
+    }
+
+    @Transactional
+    public void delete(String userPublicId, Long vehicleId) {
+        Vehicle vehicle = ownedVehicle(userPublicId, vehicleId);
+        if (rideRepository.existsByVehicleId(vehicleId)) {
+            throw ApiException.businessRule("VEHICLE_005", "Cannot delete a vehicle that has been used for one or more rides.");
+        }
+        vehicleRepository.delete(vehicle);
+    }
+
+    private Vehicle ownedVehicle(String userPublicId, Long vehicleId) {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> ApiException.notFound("VEHICLE_002", "Vehicle not found."));
+        if (!vehicle.getDriver().getUser().getPublicId().equals(userPublicId)) {
+            throw ApiException.forbidden("VEHICLE_004", "You do not own this vehicle.");
+        }
+        return vehicle;
     }
 
     /** Used by RideService: FR "Vehicle Verified" ride-publish validation. */
@@ -76,7 +120,8 @@ public class VehicleService {
     }
 
     private VehicleResponse toResponse(Vehicle v) {
-        return new VehicleResponse(v.getId(), v.getVehicleNumber(), v.getBrand(), v.getModel(),
-                v.getSeatingCapacity(), v.getStatus().name());
+        return new VehicleResponse(v.getId(), v.getVehicleNumber(), v.getBrand(), v.getModel(), v.getCategory(),
+                v.getFuelType(), v.getTransmission(), v.getColor(), v.getSeatingCapacity(),
+                v.getInsuranceExpiry(), v.getRegistrationExpiry(), v.getStatus().name());
     }
 }

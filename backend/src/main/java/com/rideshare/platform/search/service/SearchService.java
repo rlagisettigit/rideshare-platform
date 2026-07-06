@@ -3,6 +3,7 @@ package com.rideshare.platform.search.service;
 import com.rideshare.platform.common.GeoUtils;
 import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.entity.RideStatus;
+import com.rideshare.platform.ride.repository.RecurringRideRepository;
 import com.rideshare.platform.ride.repository.RideRepository;
 import com.rideshare.platform.route.entity.RideRoutePoint;
 import com.rideshare.platform.route.repository.RideRoutePointRepository;
@@ -38,6 +39,7 @@ public class SearchService {
     private final H3SpatialService h3SpatialService;
     private final RideRepository rideRepository;
     private final RideRoutePointRepository rideRoutePointRepository;
+    private final RecurringRideRepository recurringRideRepository;
 
     @Value("${app.search.departure-window-hours:6}")
     private int departureWindowHours;
@@ -72,6 +74,11 @@ public class SearchService {
             RideRoutePoint nearestDrop = nearestPoint(points, request.dropLat(), request.dropLng());
             double detourKm = estimateDetourKm(nearestPickup, nearestDrop);
 
+            // Lets the frontend offer "book all upcoming occurrences" when this result is one
+            // date out of a driver's recurring series, instead of only this single date.
+            String recurringRidePublicId = ride.getRecurringRideId() == null ? null
+                    : recurringRideRepository.findById(ride.getRecurringRideId()).map(r -> r.getPublicId()).orElse(null);
+
             results.add(new RideSearchResult(
                     ride.getPublicId(),
                     ride.getDriver().getUser().getName(),
@@ -83,11 +90,33 @@ public class SearchService {
                     match.getPickupDistanceFromStart() / 1000.0,
                     detourKm,
                     nearestPickup.getSequenceNo(),
-                    nearestDrop.getSequenceNo()
+                    nearestDrop.getSequenceNo(),
+                    recurringRidePublicId
             ));
         }
 
-        return rank(results, request.sortBy());
+        return rank(dedupeRecurringOccurrences(results), request.sortBy());
+    }
+
+    /** The departure window spans past midnight (see windowEnd above) to catch late-night
+     *  departures, but that means a recurring series with an early-morning departure time can
+     *  have two of its occurrences (today's and tomorrow's) both fall inside one search's
+     *  window - same driver/route/price, just a different date. The UI already represents a
+     *  series as a single card with a "book upcoming dates" picker, so collapse those down to
+     *  the single soonest-departing occurrence per series instead of showing it twice. */
+    private List<RideSearchResult> dedupeRecurringOccurrences(List<RideSearchResult> results) {
+        Map<String, RideSearchResult> earliestPerSeries = new LinkedHashMap<>();
+        List<RideSearchResult> deduped = new ArrayList<>();
+        for (RideSearchResult result : results) {
+            if (result.recurringRidePublicId() == null) {
+                deduped.add(result);
+                continue;
+            }
+            earliestPerSeries.merge(result.recurringRidePublicId(), result,
+                    (a, b) -> a.departureAt().isBefore(b.departureAt()) ? a : b);
+        }
+        deduped.addAll(earliestPerSeries.values());
+        return deduped;
     }
 
     private RideRoutePoint nearestPoint(List<RideRoutePoint> points, double lat, double lng) {

@@ -8,6 +8,7 @@ const LINKS = [
   { to: "/ratings", label: "Ratings" },
   { to: "/notifications", label: "Notifications" },
   { to: "/publish", label: "Publish a ride" },
+  { to: "/recurring-rides", label: "Recurring rides" },
   { to: "/driver", label: "Driver dashboard" },
   { to: "/admin", label: "Admin" }
 ];

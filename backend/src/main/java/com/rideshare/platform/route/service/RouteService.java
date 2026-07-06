@@ -3,6 +3,7 @@ package com.rideshare.platform.route.service;
 import com.rideshare.platform.common.GeoUtils;
 import com.rideshare.platform.common.exception.ApiException;
 import com.rideshare.platform.route.PolylineCodec;
+import com.rideshare.platform.route.dto.RouteOption;
 import com.rideshare.platform.route.entity.RideRoute;
 import com.rideshare.platform.route.entity.RideRoutePoint;
 import com.rideshare.platform.route.provider.RoutePoint;
@@ -17,12 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * FR: Section 7 Route Management pipeline, executed when a driver publishes a ride:
  *   Call Routing Provider -> Receive Polyline -> Decode Polyline
- *   -> Convert to H3 Cells -> Store Ordered Route -> Store H3 Index Map -> Build Redis Index
+ *   -> Convert to H3 Cells -> Store Ordered Route -> Build Redis Index
  */
 @Service
 @RequiredArgsConstructor
@@ -34,19 +36,55 @@ public class RouteService {
     private static final int MAX_ROUTE_POINTS = 300;
 
     private final RoutingProvider routingProvider;
+    private final RoutePreviewService routePreviewService;
     private final H3Service h3Service;
     private final RideRouteRepository rideRouteRepository;
     private final RideRoutePointRepository rideRoutePointRepository;
     private final RouteRedisIndexService redisIndexService;
 
+    /**
+     * Tries a real, road-following Mappls route first (one call - the same cost as the
+     * driver-facing preview button) so a ride only falls back to the local straight-line
+     * interpolation when Mappls itself is unavailable, rather than whenever a driver simply
+     * didn't click "Preview route options" before publishing.
+     */
     @Transactional
     public List<RideRoutePoint> generateAndStoreRoute(Long rideId, double originLat, double originLng,
                                                         double destLat, double destLng) {
+        return storeRoute(rideId, resolveRoute(originLat, originLng, destLat, destLng));
+    }
+
+    /**
+     * Resolves a route for an origin/destination pair without persisting it yet - exposed so a
+     * recurring ride series can fetch the identical route once and reuse the result across every
+     * generated occurrence via {@link #storeRoute}, instead of one Mappls call per occurrence.
+     * Never throws: falls back to the local straight-line interpolation if Mappls is unavailable.
+     */
+    public RouteResult resolveRoute(double originLat, double originLng, double destLat, double destLng) {
+        Optional<RouteOption> auto = routePreviewService.fastestRouteSafe(originLat, originLng, destLat, destLng);
+        if (auto.isPresent()) {
+            RouteOption r = auto.get();
+            List<double[]> decoded = PolylineCodec.decode(r.encodedPolyline());
+            // Mappls only covers India: for a route entirely outside its coverage (e.g. a US
+            // address) it can return a "successful" response that's actually degenerate - a
+            // couple of vertices with zero reported distance/duration - rather than an error.
+            // Storing that as-is would leave a ride with just its origin and destination as
+            // "route points", which breaks any booking whose pickup/drop isn't one of those
+            // two exact coordinates (BookingService's nearestPoint() has nothing else to snap
+            // to). Treat that the same as Mappls being unavailable and fall through to the
+            // local straight-line interpolation, which is geometry-only and always produces a
+            // usable multi-point route regardless of where on Earth the ride is.
+            boolean usable = decoded.size() >= 3 && r.distanceMeters() > 0;
+            if (usable) {
+                return toRouteResult("MAPPLS", r.encodedPolyline(), r.distanceMeters(), r.durationSeconds(), decoded);
+            }
+        }
+
         RouteResult result = routingProvider.getRoute(originLat, originLng, destLat, destLng);
         if (result == null || result.decodedPoints() == null || result.decodedPoints().isEmpty()) {
             throw ApiException.externalService("ROUTE_001", "Routing provider failed to generate a route.");
         }
-        return storeRoute(rideId, result);
+        return result;
     }
 
     /**
@@ -62,7 +100,11 @@ public class RouteService {
         if (decoded.isEmpty()) {
             throw ApiException.badRequest("ROUTE_002", "Selected route polyline could not be decoded.");
         }
+        return storeRoute(rideId, toRouteResult(provider, encodedPolyline, distanceMeters, durationSeconds, decoded));
+    }
 
+    private RouteResult toRouteResult(String provider, String encodedPolyline, int distanceMeters,
+                                       int durationSeconds, List<double[]> decoded) {
         List<RoutePoint> points = new ArrayList<>();
         double cumulative = 0;
         for (int i = 0; i < decoded.size(); i++) {
@@ -74,12 +116,13 @@ public class RouteService {
             }
             points.add(new RoutePoint(lat, lng, (int) cumulative));
         }
-
-        RouteResult result = new RouteResult(provider, encodedPolyline, distanceMeters, durationSeconds, points);
-        return storeRoute(rideId, result);
+        return new RouteResult(provider, encodedPolyline, distanceMeters, durationSeconds, points);
     }
 
-    private List<RideRoutePoint> storeRoute(Long rideId, RouteResult result) {
+    /** Persists an already-resolved route against a specific ride - reusable across many rides
+     *  that share the same underlying route (see resolveRoute) without re-fetching or re-decoding. */
+    @Transactional
+    public List<RideRoutePoint> storeRoute(Long rideId, RouteResult result) {
         RideRoute route = new RideRoute();
         route.setRideId(rideId);
         route.setProvider(result.provider());

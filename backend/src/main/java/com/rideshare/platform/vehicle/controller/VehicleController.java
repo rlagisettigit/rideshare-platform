@@ -31,4 +31,17 @@ public class VehicleController {
     public ApiResponse<List<VehicleResponse>> myVehicles(@AuthenticationPrincipal String userPublicId) {
         return ApiResponse.ok(vehicleService.myVehicles(userPublicId));
     }
+
+    @PutMapping("/{vehicleId}")
+    public ApiResponse<VehicleResponse> update(@AuthenticationPrincipal String userPublicId,
+                                                @PathVariable Long vehicleId,
+                                                @Valid @RequestBody VehicleRequest request) {
+        return ApiResponse.ok(vehicleService.update(userPublicId, vehicleId, request), "Vehicle updated.");
+    }
+
+    @DeleteMapping("/{vehicleId}")
+    public ApiResponse<Void> delete(@AuthenticationPrincipal String userPublicId, @PathVariable Long vehicleId) {
+        vehicleService.delete(userPublicId, vehicleId);
+        return ApiResponse.ok(null, "Vehicle deleted.");
+    }
 }

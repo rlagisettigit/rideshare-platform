@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { getMyBookings, cancelBooking } from "../api/bookings";
+import { getPendingReviews } from "../api/reviews";
+import RatingModal from "../components/RatingModal";
+import DriverTrackingMap from "../components/DriverTrackingMap";
 
 const STATUS_CLASS = {
   CONFIRMED: "badge-active",
@@ -25,12 +28,20 @@ function tripStatus(b) {
 export default function MyBookings() {
   const [bookings, setBookings] = useState(null);
   const [error, setError] = useState(null);
+  const [pendingReviews, setPendingReviews] = useState([]);
+  const [target, setTarget] = useState(null);
+  // Trackable bookings show their route map in the list by default (no click needed) - this
+  // just remembers which ones the passenger has manually collapsed.
+  const [hiddenMapIds, setHiddenMapIds] = useState(() => new Set());
 
   const load = () => {
     getMyBookings().then((res) => setBookings(res.data)).catch((err) => setError(err?.message));
   };
+  const loadPendingReviews = () => {
+    getPendingReviews().then((res) => setPendingReviews(res.data)).catch(() => {});
+  };
 
-  useEffect(load, []);
+  useEffect(() => { load(); loadPendingReviews(); }, []);
 
   const handleCancel = async (publicId) => {
     if (!confirm("Cancel this booking?")) return;
@@ -40,6 +51,23 @@ export default function MyBookings() {
     } catch (err) {
       alert(err?.message ?? "Could not cancel booking.");
     }
+  };
+
+  // A ride has exactly one driver, so matching by ridePublicId alone is unambiguous here.
+  const pendingDriverRating = (ridePublicId) =>
+    pendingReviews.find((p) => p.direction === "RATE_DRIVER" && p.ridePublicId === ridePublicId);
+
+  const handleSubmitted = () => {
+    setTarget(null);
+    loadPendingReviews();
+  };
+
+  const toggleMap = (publicId) => {
+    setHiddenMapIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(publicId)) next.delete(publicId); else next.add(publicId);
+      return next;
+    });
   };
 
   return (
@@ -59,26 +87,50 @@ export default function MyBookings() {
         {bookings?.map((b) => {
           const trip = tripStatus(b);
           const canCancel = (b.status === "PENDING" || b.status === "CONFIRMED") && b.rideStatus !== "IN_PROGRESS";
+          const ratable = b.status === "COMPLETED" ? pendingDriverRating(b.ridePublicId) : null;
+          const canTrack = b.status === "CONFIRMED" && b.rideStatus === "IN_PROGRESS";
+          const isTracking = canTrack && !hiddenMapIds.has(b.publicId);
           return (
-            <div key={b.publicId} className="card between">
-              <div>
-                <div className="route-line">
-                  <span className="stop">{b.pickupAddress ?? "Pickup"}</span>
-                  <span className="path" />
-                  <span className="stop">{b.dropAddress ?? "Drop"}</span>
+            <div key={b.publicId} className="card stack">
+              <div className="between">
+                <div>
+                  <div className="route-line">
+                    <span className="stop">{b.pickupAddress ?? "Pickup"}</span>
+                    <span className="path" />
+                    <span className="stop">{b.dropAddress ?? "Drop"}</span>
+                  </div>
+                  <span className="muted">{b.seatsBooked} seat{b.seatsBooked === 1 ? "" : "s"} · ₹{Number(b.fare).toFixed(0)}</span>
                 </div>
-                <span className="muted">{b.seatsBooked} seat{b.seatsBooked === 1 ? "" : "s"} · ₹{Number(b.fare).toFixed(0)}</span>
+                <div className="row">
+                  <span className={`badge ${trip.cls}`}>{trip.label}</span>
+                  {canTrack && (
+                    <button className="btn btn-secondary" onClick={() => toggleMap(b.publicId)}>
+                      {isTracking ? "Hide map" : "Show map"}
+                    </button>
+                  )}
+                  {canCancel && (
+                    <button className="btn btn-secondary" onClick={() => handleCancel(b.publicId)}>Cancel</button>
+                  )}
+                  {ratable && (
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setTarget({ ...ratable, title: "Rate your driver" })}
+                    >
+                      Rate driver
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="row">
-                <span className={`badge ${trip.cls}`}>{trip.label}</span>
-                {canCancel && (
-                  <button className="btn btn-secondary" onClick={() => handleCancel(b.publicId)}>Cancel</button>
-                )}
-              </div>
+
+              {isTracking && <DriverTrackingMap booking={b} />}
             </div>
           );
         })}
       </div>
+
+      {target && (
+        <RatingModal target={target} onClose={() => setTarget(null)} onSubmitted={handleSubmitted} />
+      )}
     </div>
   );
 }

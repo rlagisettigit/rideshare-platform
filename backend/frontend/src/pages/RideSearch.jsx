@@ -3,6 +3,8 @@ import { searchRides } from "../api/rides";
 import { createBooking } from "../api/bookings";
 import RideCard from "../components/RideCard";
 import AddressAutocomplete from "../components/AddressAutocomplete";
+import MapLocationPicker from "../components/MapLocationPicker";
+import RecurringBookingModal from "../components/RecurringBookingModal";
 
 function todayDateString() {
   const d = new Date();
@@ -20,6 +22,7 @@ export default function RideSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [bookingRideId, setBookingRideId] = useState(null);
+  const [recurringPickerId, setRecurringPickerId] = useState(null);
 
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -78,6 +81,16 @@ export default function RideSearch() {
     }
   };
 
+  const handleRecurringBooked = (summary) => {
+    setRecurringPickerId(null);
+    const { booked, requested, failures } = summary;
+    let message = `Requested booking on ${booked} of ${requested} selected date${requested === 1 ? "" : "s"}.`;
+    if (failures.length > 0) {
+      message += `\nCouldn't book:\n${failures.join("\n")}`;
+    }
+    alert(message);
+  };
+
   return (
     <div className="stack">
       <div>
@@ -86,7 +99,7 @@ export default function RideSearch() {
       </div>
 
       <form onSubmit={handleSearch} className="card stack">
-        <div className="field-row">
+        <div className="field-row" style={{ alignItems: "flex-end" }}>
           <AddressAutocomplete
             label="Pickup location"
             value={form.pickupAddress}
@@ -97,8 +110,19 @@ export default function RideSearch() {
             placeholder="Start typing an address…"
             required
           />
+          <div className="field" style={{ flex: "none" }}>
+            <MapLocationPicker
+              label="Pick pickup on map"
+              initialLat={form.pickupLat ? parseFloat(form.pickupLat) : undefined}
+              initialLng={form.pickupLng ? parseFloat(form.pickupLng) : undefined}
+              useCurrentLocation
+              onSelect={({ address, lat, lng }) =>
+                setForm((f) => ({ ...f, pickupAddress: address, pickupLat: lat, pickupLng: lng }))
+              }
+            />
+          </div>
         </div>
-        <div className="field-row">
+        <div className="field-row" style={{ alignItems: "flex-end" }}>
           <AddressAutocomplete
             label="Drop location"
             value={form.dropAddress}
@@ -109,6 +133,16 @@ export default function RideSearch() {
             placeholder="Start typing an address…"
             required
           />
+          <div className="field" style={{ flex: "none" }}>
+            <MapLocationPicker
+              label="Pick drop on map"
+              initialLat={form.dropLat ? parseFloat(form.dropLat) : undefined}
+              initialLng={form.dropLng ? parseFloat(form.dropLng) : undefined}
+              onSelect={({ address, lat, lng }) =>
+                setForm((f) => ({ ...f, dropAddress: address, dropLat: lat, dropLng: lng }))
+              }
+            />
+          </div>
         </div>
         <div className="field-row">
           <div className="field">
@@ -150,17 +184,45 @@ export default function RideSearch() {
               key={ride.ridePublicId}
               ride={{ ...ride, originAddress: form.pickupAddress || "Pickup on route", destinationAddress: form.dropAddress || "Drop on route" }}
               action={
-                <button
-                  className="btn btn-primary"
-                  onClick={() => handleBook(ride.ridePublicId)}
-                  disabled={bookingRideId === ride.ridePublicId}
-                >
-                  {bookingRideId === ride.ridePublicId ? "Requesting…" : "Request booking"}
-                </button>
+                <div className="row">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleBook(ride.ridePublicId)}
+                    disabled={bookingRideId === ride.ridePublicId}
+                  >
+                    {bookingRideId === ride.ridePublicId ? "Requesting…" : "Request booking"}
+                  </button>
+                  {ride.recurringRidePublicId && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setRecurringPickerId(ride.recurringRidePublicId)}
+                      title="This trip repeats on a schedule - pick which upcoming dates to book"
+                    >
+                      Book upcoming dates
+                    </button>
+                  )}
+                </div>
               }
             />
           ))}
         </div>
+      )}
+
+      {recurringPickerId && (
+        <RecurringBookingModal
+          recurringRidePublicId={recurringPickerId}
+          pickup={{
+            pickupLat: parseFloat(form.pickupLat),
+            pickupLng: parseFloat(form.pickupLng),
+            pickupAddress: form.pickupAddress,
+            dropLat: parseFloat(form.dropLat),
+            dropLng: parseFloat(form.dropLng),
+            dropAddress: form.dropAddress,
+            seats: Number(form.passengers)
+          }}
+          onClose={() => setRecurringPickerId(null)}
+          onBooked={handleRecurringBooked}
+        />
       )}
     </div>
   );

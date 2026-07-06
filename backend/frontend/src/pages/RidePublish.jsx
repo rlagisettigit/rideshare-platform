@@ -56,6 +56,17 @@ export default function RidePublish() {
     }
   };
 
+  // Defaults available seats to the vehicle's capacity minus the driver's own seat - still
+  // editable afterward, since a driver may want to offer fewer (e.g. carrying luggage).
+  const handleVehicleChange = (vehicleId) => {
+    const vehicle = vehicles.find((v) => String(v.id) === String(vehicleId));
+    setForm((f) => ({
+      ...f,
+      vehicleId,
+      availableSeats: vehicle ? Math.max(1, vehicle.seatingCapacity - 1) : f.availableSeats
+    }));
+  };
+
   const handlePreviewRoutes = async () => {
     setPreviewError(null);
     if (!form.originLat || !form.originLng || !form.destinationLat || !form.destinationLng) {
@@ -153,7 +164,7 @@ export default function RidePublish() {
       <form onSubmit={handleSubmit} className="card stack">
         <div className="field">
           <label>Vehicle</label>
-          <select value={form.vehicleId} onChange={update("vehicleId")} required>
+          <select value={form.vehicleId} onChange={(e) => handleVehicleChange(e.target.value)} required>
             <option value="">Select a vehicle</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>{v.brand} {v.model} · {v.vehicleNumber} ({v.status})</option>

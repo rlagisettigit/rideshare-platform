@@ -14,6 +14,8 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     Optional<Ride> findByPublicId(String publicId);
     List<Ride> findByDriverIdOrderByDepartureAtDesc(Long driverId);
     List<Ride> findByStatus(RideStatus status);
+    boolean existsByVehicleId(Long vehicleId);
+    List<Ride> findByRecurringRideId(Long recurringRideId);
 
     /** FR: Section 9 Seat Allocation - "Seats reserved atomically. No overselling." */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -8,7 +8,14 @@ spring:
     name: rideshare-platform
 
   datasource:
-    url: jdbc:mysql://localhost:3306/rideshare?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    # serverTimezone=UTC tells the driver to treat every TIMESTAMP column as UTC on the wire, but
+    # that's only true if the MySQL session itself is actually running in UTC - on a server whose
+    # session time_zone defaults to SYSTEM (the host OS zone), the two disagree and every
+    # TIMESTAMP read/write silently shifts by the host's UTC offset (e.g. a ride departing in 5
+    # hours reads back as having already departed 5 hours ago). sessionVariables forces UTC on
+    # the actual connection so it matches what serverTimezone=UTC already assumes, instead of
+    # relying on the DB server's own default being configured correctly.
+    url: jdbc:mysql://localhost:3306/rideshare?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&sessionVariables=time_zone='%2B00:00'
     username: root
     password: Rams@1234
     driver-class-name: com.mysql.cj.jdbc.Driver

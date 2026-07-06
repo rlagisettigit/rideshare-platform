@@ -46,6 +46,16 @@ public class Booking extends BaseEntity {
     @Column(name = "drop_sequence_no", nullable = false)
     private int dropSequenceNo;
 
+    /** 1-based visiting order among this ride's confirmed passengers, computed by
+     *  RideStopPlanner when the driver starts the ride - null until then. Distinct from
+     *  pickup/dropSequenceNo above, which locate this booking along the ride's fixed route
+     *  polyline rather than order it relative to other passengers' stops. */
+    @Column(name = "pickup_stop_order")
+    private Integer pickupStopOrder;
+
+    @Column(name = "drop_stop_order")
+    private Integer dropStopOrder;
+
     @Column(name = "seats_booked", nullable = false)
     private int seatsBooked;
 
@@ -61,4 +71,10 @@ public class Booking extends BaseEntity {
 
     @Column(name = "cancellation_reason")
     private String cancellationReason;
+
+    /** Set when this booking was created as part of "book all upcoming occurrences" on a
+     *  recurring ride, so the driver can accept/reject the whole batch in one action. Null
+     *  for a normal single-ride booking. */
+    @Column(name = "booking_batch_id")
+    private String bookingBatchId;
 }
