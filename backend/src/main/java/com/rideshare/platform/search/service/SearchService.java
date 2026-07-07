@@ -1,6 +1,9 @@
 package com.rideshare.platform.search.service;
 
 import com.rideshare.platform.common.GeoUtils;
+import com.rideshare.platform.pricing.dto.FareBreakdownResponse;
+import com.rideshare.platform.pricing.service.FareBreakdown;
+import com.rideshare.platform.pricing.service.RideFareEstimator;
 import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.entity.RideStatus;
 import com.rideshare.platform.ride.repository.RecurringRideRepository;
@@ -40,6 +43,7 @@ public class SearchService {
     private final RideRepository rideRepository;
     private final RideRoutePointRepository rideRoutePointRepository;
     private final RecurringRideRepository recurringRideRepository;
+    private final RideFareEstimator rideFareEstimator;
 
     @Value("${app.search.departure-window-hours:6}")
     private int departureWindowHours;
@@ -74,6 +78,10 @@ public class SearchService {
             RideRoutePoint nearestDrop = nearestPoint(points, request.dropLat(), request.dropLng());
             double detourKm = estimateDetourKm(nearestPickup, nearestDrop);
 
+            // What a booking for this pickup/drop/seat-count will actually charge - not the
+            // driver's advertised pricePerSeat - via the same PricingEngine BookingService uses.
+            FareBreakdown fareBreakdown = rideFareEstimator.estimate(ride, nearestPickup, nearestDrop, request.passengers());
+
             // Lets the frontend offer "book all upcoming occurrences" when this result is one
             // date out of a driver's recurring series, instead of only this single date.
             String recurringRidePublicId = ride.getRecurringRideId() == null ? null
@@ -87,6 +95,8 @@ public class SearchService {
                     ride.getDepartureAt(),
                     ride.getAvailableSeats(),
                     ride.getPricePerSeat(),
+                    fareBreakdown.passengerFare(),
+                    FareBreakdownResponse.DISCLAIMER,
                     match.getPickupDistanceFromStart() / 1000.0,
                     detourKm,
                     nearestPickup.getSequenceNo(),
@@ -140,7 +150,7 @@ public class SearchService {
             case EARLIEST_DEPARTURE -> Comparator.comparing(RideSearchResult::departureAt);
             case DRIVER_RATING -> Comparator.comparing(RideSearchResult::driverRating,
                     Comparator.nullsLast(Comparator.reverseOrder()));
-            case RIDE_PRICE -> Comparator.comparing(RideSearchResult::pricePerSeat);
+            case RIDE_PRICE -> Comparator.comparing(RideSearchResult::estimatedFare);
         };
         return results.stream().sorted(comparator).collect(Collectors.toList());
     }

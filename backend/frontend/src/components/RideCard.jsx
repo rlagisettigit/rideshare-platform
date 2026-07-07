@@ -1,4 +1,11 @@
 export default function RideCard({ ride, action }) {
+  // estimatedFare comes from search results (priced for this passenger's actual pickup/drop/seats);
+  // estimatedFarePerSeat comes from a ride-details lookup (priced for the full route, 1 seat).
+  // Fall back to the driver's listed pricePerSeat only if neither estimate is present.
+  const estimatedFare = ride.estimatedFare ?? ride.estimatedFarePerSeat;
+  const hasEstimate = estimatedFare != null;
+  const displayPrice = hasEstimate ? estimatedFare : ride.pricePerSeat;
+
   return (
     <div className="card">
       <div className="between">
@@ -12,9 +19,9 @@ export default function RideCard({ ride, action }) {
         </div>
         <div style={{ textAlign: "right" }}>
           <div className="mono" style={{ fontSize: "1.1rem", fontWeight: 600 }}>
-            ₹{Number(ride.pricePerSeat).toFixed(0)}
+            ₹{Number(displayPrice).toFixed(0)}{hasEstimate ? "*" : ""}
           </div>
-          <span className="muted">per seat</span>
+          <span className="muted">per seat{hasEstimate ? " (estimated)" : ""}</span>
         </div>
       </div>
 
@@ -34,6 +41,10 @@ export default function RideCard({ ride, action }) {
           {ride.petsAllowed && <span className="badge badge-active">Pets ok</span>}
         </div>
       </div>
+
+      {hasEstimate && ride.fareDisclaimer && (
+        <div className="muted" style={{ fontSize: "0.75rem", marginTop: 4 }}>{ride.fareDisclaimer}</div>
+      )}
 
       {action && <div style={{ marginTop: 12 }}>{action}</div>}
     </div>

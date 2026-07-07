@@ -8,6 +8,9 @@ import com.rideshare.platform.driver.service.DriverService;
 import com.rideshare.platform.kafka.events.RideCompletedEvent;
 import com.rideshare.platform.kafka.events.RidePublishedEvent;
 import com.rideshare.platform.kafka.events.RideStartedEvent;
+import com.rideshare.platform.pricing.dto.FareBreakdownResponse;
+import com.rideshare.platform.pricing.service.FareBreakdown;
+import com.rideshare.platform.pricing.service.RideFareEstimator;
 import com.rideshare.platform.ride.dto.RideCreateRequest;
 import com.rideshare.platform.ride.dto.RideResponse;
 import com.rideshare.platform.ride.dto.RideStopPlanResponse;
@@ -15,6 +18,8 @@ import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.entity.RideStatus;
 import com.rideshare.platform.ride.repository.RecurringRideRepository;
 import com.rideshare.platform.ride.repository.RideRepository;
+import com.rideshare.platform.route.entity.RideRoutePoint;
+import com.rideshare.platform.route.repository.RideRoutePointRepository;
 import com.rideshare.platform.route.service.RouteService;
 import com.rideshare.platform.vehicle.entity.Vehicle;
 import com.rideshare.platform.vehicle.service.VehicleService;
@@ -25,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,6 +48,8 @@ public class RideService {
     private final RouteService routeService;
     private final BookingService bookingService;
     private final RecurringRideRepository recurringRideRepository;
+    private final RideRoutePointRepository rideRoutePointRepository;
+    private final RideFareEstimator rideFareEstimator;
     private final RideStopPlanningService rideStopPlanningService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -240,11 +248,27 @@ public class RideService {
                 r.getDepartureAt(),
                 r.getAvailableSeats(),
                 r.getPricePerSeat(),
+                estimatedFarePerSeat(r),
+                FareBreakdownResponse.DISCLAIMER,
                 r.isWomenOnly(),
                 r.isPetsAllowed(),
                 r.isLuggageAllowed(),
                 r.getStatus().name(),
                 recurringRidePublicId
         );
+    }
+
+    /**
+     * PricingEngine quote for one seat over the ride's full origin-to-destination route -
+     * there's no passenger-specific pickup/drop on a ride-details view, so this is a
+     * representative "starting from" price, not what any particular booking will be charged.
+     */
+    private BigDecimal estimatedFarePerSeat(Ride ride) {
+        List<RideRoutePoint> points = rideRoutePointRepository.findByRideIdOrderBySequenceNoAsc(ride.getId());
+        if (points.size() < 2) {
+            return ride.getPricePerSeat();
+        }
+        FareBreakdown breakdown = rideFareEstimator.estimate(ride, points.get(0), points.get(points.size() - 1), 1);
+        return breakdown.passengerFare();
     }
 }

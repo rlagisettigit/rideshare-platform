@@ -1,0 +1,156 @@
+RIDESHARE-PLATFORM (WAYPOINT) - SETUP GUIDE FOR A NEW MACHINE
+================================================================
+
+This document covers everything needed to run this application on a different
+system: required software, infrastructure services, environment/config files
+that are NOT in git (must be recreated manually), and the startup sequence.
+
+
+1. SOFTWARE TO INSTALL
+-----------------------
+  - JDK 21                         backend runtime (Spring Boot 3.3)
+  - Maven 3.9+                     build/run backend (no mvnw wrapper in repo)
+  - Node.js 18+ (20 LTS recommended)   frontend (Vite + React)
+  - Docker Desktop (recent)        runs MySQL, Redis, Kafka, Zookeeper, Kafka UI
+  - Git
+
+  Everything else (MySQL, Redis, Kafka, Zookeeper, Kafka UI) runs as Docker
+  containers via docker-compose.yml at the repo root - no local install needed.
+
+
+2. INFRASTRUCTURE SERVICES (docker-compose.yml)
+-------------------------------------------------
+Start all of them with:
+
+    docker compose up -d
+
+Check health with:
+
+    docker compose ps
+
+  Service     Image                              Port(s)          Credentials                        Used for
+  ----------  ---------------------------------  ---------------  ----------------------------------  --------------------------------------------------
+  MySQL       mysql:8.4                          3306             db=rideshare, user=root,            Primary datastore, Flyway-migrated on backend start
+                                                                   pass=Rams@1234
+  Redis       redis:7-alpine                     6379             none                                H3 route-index (RouteRedisIndexService) + live
+                                                                                                        location tracking (RideLocationService)
+  Zookeeper   confluentinc/cp-zookeeper:7.6.1     2181             none                                Kafka coordination (required by this Kafka version)
+  Kafka       confluentinc/cp-kafka:7.6.1         9092             none                                Event bus (topics below)
+  Kafka UI    provectuslabs/kafka-ui              8081 -> 8080     none                                Browser UI to inspect topics/messages:
+                                                                                                        http://localhost:8081
+
+Kafka topics (auto-created, KAFKA_AUTO_CREATE_TOPICS_ENABLE=true - nothing to
+pre-create manually). Defined in KafkaTopics.java:
+
+  - ride.published
+  - booking.requested
+  - booking.accepted
+  - booking.rejected
+  - booking.cancelled
+  - ride.started
+  - ride.completed
+  - audit.events
+
+  Producers: RideService, BookingService.
+  Consumer:  RideBookingEventListener (group "notification-service") - turns
+             these events into push/SMS/email/in-app notifications.
+
+Connectivity notes:
+  - Kafka's advertised listener is hardcoded to PLAINTEXT://localhost:9092.
+    This only works when the Spring Boot app runs on the HOST machine (not
+    inside another container). If you ever containerize the backend too,
+    add an internal listener (e.g. kafka:9092) to docker-compose.yml.
+  - Backend reads KAFKA_BROKERS, REDIS_HOST, REDIS_PORT from env with
+    localhost/defaults - fine as long as Docker Desktop exposes those ports
+    to the host, which it does by default.
+  - No manual DB schema needed - Flyway runs V1__init.sql (and later
+    migrations) automatically on backend startup.
+
+
+3. FILES YOU MUST RECREATE MANUALLY (gitignored - never committed)
+---------------------------------------------------------------------
+These hold secrets, so they are excluded via .gitignore and will not exist
+after a fresh clone. Create them yourself on the new machine.
+
+  a) backend/config/application.yml
+
+     MAPPLS_API_KEY: <your key>
+     MAPPLS_CLIENT_SECRET: <your secret>
+     RESEND_API_KEY: <your key>
+     RESEND_FROM_EMAIL: Waypoint <onboarding@resend.dev>
+
+  b) backend/.env  (copy backend/.env.example and fill in real values)
+
+     DB_HOST=localhost
+     DB_PORT=3306
+     DB_NAME=rideshare
+     DB_USERNAME=rideshare
+     DB_PASSWORD=rideshare
+
+     REDIS_HOST=localhost
+     REDIS_PORT=6379
+
+     KAFKA_BROKERS=localhost:9092
+
+     JWT_SECRET=replace-with-a-long-random-256-bit-secret
+
+     MAPPLS_API_KEY=
+
+     EMAIL_NOTIFICATIONS_ENABLED=true
+     RESEND_API_KEY=
+     RESEND_FROM_EMAIL=Waypoint <onboarding@resend.dev>
+
+     GOOGLE_STATIC_MAPS_API_KEY=
+
+     NOTE - known mismatch: src/main/resources/application.yml currently
+     hardcodes the MySQL datasource credentials directly as root/Rams@1234
+     (matching docker-compose.yml) instead of reading DB_USERNAME/DB_PASSWORD
+     from env. The DB_* values in .env are documented but currently unused.
+     A fresh machine still works out of the box because the hardcoded creds
+     match docker-compose.yml - just don't expect changing .env's DB_* vars
+     to have any effect unless application.yml is updated to read them.
+
+  If MAPPLS_API_KEY is left blank, MapplsRoutingProvider falls back to a
+  deterministic straight-line route generator, so the full
+  H3 -> search -> booking pipeline still works without live map credentials.
+
+  If EMAIL_NOTIFICATIONS_ENABLED=false, email sending is skipped entirely
+  without touching code; in-app notifications are unaffected.
+
+
+4. STARTUP SEQUENCE
+----------------------
+  # 1. Clone
+  git clone https://github.com/rlagisettigit/rideshare-platform.git
+  cd rideshare-platform
+
+  # 2. Start infra (MySQL, Redis, Kafka, Zookeeper, Kafka UI)
+  docker compose up -d
+
+  # 3. Recreate backend/config/application.yml and backend/.env (see section 3)
+
+  # 4. Run backend (Flyway migrates DB automatically on startup)
+  cd backend
+  mvn spring-boot:run
+  # API:     http://localhost:8080
+  # Swagger: http://localhost:8080/swagger-ui.html
+
+  # 5. Run frontend (separate terminal)
+  cd backend/frontend
+  npm install
+  npm run dev
+  # UI: http://localhost:5173 (proxies /api/v1/* to the backend)
+
+
+5. NOT INCLUDED / KNOWN GAPS (from README.md)
+-------------------------------------------------
+  - Load testing against stated P95 targets
+  - Production secrets management
+  - Rate limiting middleware
+  - CI/CD
+  - Observability/tracing beyond correlation IDs in logs
+  - End-to-end tests
+  - Google/Apple Sign-In (AuthService.loginWithSocialProvider throws "not
+    configured" until ID-token verification is wired in)
+  - Admin sub-modules (Support Tickets, Coupons UI, full Reports UI) have
+    backend endpoints but no dedicated frontend screens yet

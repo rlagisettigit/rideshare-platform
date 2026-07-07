@@ -6,6 +6,7 @@ import com.rideshare.platform.booking.dto.BookingResponse;
 import com.rideshare.platform.booking.dto.CancelBookingRequest;
 import com.rideshare.platform.booking.service.BookingService;
 import com.rideshare.platform.common.ApiResponse;
+import com.rideshare.platform.pricing.dto.FareBreakdownResponse;
 import com.rideshare.platform.ride.service.RecurringRideService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,6 +32,12 @@ public class BookingController {
     public ApiResponse<BookingResponse> create(@AuthenticationPrincipal String userPublicId,
                                                 @Valid @RequestBody BookingCreateRequest request) {
         return ApiResponse.ok(bookingService.createBooking(userPublicId, request), "Booking requested.");
+    }
+
+    /** Lets a passenger see the price for their pickup/drop before they commit to booking - see the "disclaimer" field. */
+    @PostMapping("/preview")
+    public ApiResponse<FareBreakdownResponse> preview(@Valid @RequestBody BookingCreateRequest request) {
+        return ApiResponse.ok(bookingService.previewFare(request));
     }
 
     @PostMapping("/{publicId}/accept")

@@ -15,6 +15,9 @@ import com.rideshare.platform.kafka.events.BookingCancelledEvent;
 import com.rideshare.platform.kafka.events.BookingRejectedEvent;
 import com.rideshare.platform.kafka.events.BookingRequestedEvent;
 import com.rideshare.platform.payment.service.PaymentService;
+import com.rideshare.platform.pricing.dto.FareBreakdownResponse;
+import com.rideshare.platform.pricing.service.FareBreakdown;
+import com.rideshare.platform.pricing.service.RideFareEstimator;
 import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.entity.RideStatus;
 import com.rideshare.platform.ride.repository.RecurringRideRepository;
@@ -30,8 +33,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 
@@ -53,6 +54,7 @@ public class BookingService {
     private final DriverService driverService;
     private final PaymentService paymentService;
     private final WalletService walletService;
+    private final RideFareEstimator rideFareEstimator;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private static final List<BookingStatus> ACTIVE_STATUSES = List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED);
@@ -101,7 +103,7 @@ public class BookingService {
         lockedRide.setAvailableSeats(lockedRide.getAvailableSeats() - request.seats());
         rideRepository.save(lockedRide);
 
-        BigDecimal fare = calculateFare(lockedRide, pickupPoint, dropPoint, request.seats());
+        FareBreakdown fareBreakdown = rideFareEstimator.estimate(lockedRide, pickupPoint, dropPoint, request.seats());
 
         Booking booking = new Booking();
         booking.setRide(lockedRide);
@@ -115,7 +117,7 @@ public class BookingService {
         booking.setDropAddress(request.dropAddress());
         booking.setDropSequenceNo(dropPoint.getSequenceNo());
         booking.setSeatsBooked(request.seats());
-        booking.setFare(fare);
+        booking.setFare(fareBreakdown.passengerFare());
         booking.setStatus(BookingStatus.PENDING);
         booking.setBookingBatchId(bookingBatchId);
         bookingRepository.save(booking);
@@ -270,21 +272,38 @@ public class BookingService {
         rideRepository.save(ride);
     }
 
+    /**
+     * Lets a passenger see the price for their actual pickup/drop on a real ride before they
+     * commit to booking - same fare math as createBooking, but read-only: no seat lock, no
+     * Booking row written. FareBreakdownResponse carries a disclaimer that this is an estimate.
+     */
+    @Transactional(readOnly = true)
+    public FareBreakdownResponse previewFare(BookingCreateRequest request) {
+        Ride ride = rideRepository.findByPublicId(request.ridePublicId())
+                .orElseThrow(() -> ApiException.notFound("RIDE_006", "Ride not found."));
+
+        if (ride.getStatus() != RideStatus.ACTIVE) {
+            throw ApiException.businessRule("BOOKING_001", "Ride is not accepting bookings.");
+        }
+        if (ride.getAvailableSeats() < request.seats()) {
+            throw ApiException.businessRule("RIDE_001", "Available seats exceeded.");
+        }
+
+        List<RideRoutePoint> points = rideRoutePointRepository.findByRideIdOrderBySequenceNoAsc(ride.getId());
+        RideRoutePoint pickupPoint = nearestPoint(points, request.pickupLat(), request.pickupLng());
+        RideRoutePoint dropPoint = nearestPoint(points, request.dropLat(), request.dropLng());
+        if (pickupPoint == null || dropPoint == null || pickupPoint.getSequenceNo() >= dropPoint.getSequenceNo()) {
+            throw ApiException.badRequest("BOOKING_003", "Pickup and drop points are not valid along this ride's route.");
+        }
+
+        return FareBreakdownResponse.from(rideFareEstimator.estimate(ride, pickupPoint, dropPoint, request.seats()));
+    }
+
     private RideRoutePoint nearestPoint(List<RideRoutePoint> points, double lat, double lng) {
         String targetCell = h3Service.latLngToCell(lat, lng);
         return points.stream()
                 .min(Comparator.comparingDouble(p -> h3Service.gridDistanceKm(targetCell, p.getH3Cell())))
                 .orElse(null);
-    }
-
-    /** FR: "Partial route bookings" - fare is proportional to the on-route distance actually travelled. */
-    private BigDecimal calculateFare(Ride ride, RideRoutePoint pickup, RideRoutePoint drop, int seats) {
-        int totalRouteMeters = Math.max(1, ride.getMaxDetourKm().intValue() * 1000); // fallback if total distance unknown
-        int segmentMeters = Math.max(0, drop.getCumulativeDistanceM() - pickup.getCumulativeDistanceM());
-        BigDecimal perSeat = ride.getPricePerSeat();
-        // Simple proportional model: full price for the whole route length; pro-rate by segment share.
-        // In production this uses ride_routes.distance_meters as the denominator.
-        return perSeat.multiply(BigDecimal.valueOf(seats)).setScale(2, RoundingMode.HALF_UP);
     }
 
     private BookingResponse toResponse(Booking b) {
