@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getMyBookings, getDriverBookingRequests } from "../api/bookings";
 import { getMyRides } from "../api/rides";
 import { getMyWallet } from "../api/wallet";
+import EmergencyContacts from "../components/EmergencyContacts";
 
 function timeOfDayGreeting() {
   const hour = new Date().getHours();
@@ -91,6 +92,11 @@ export default function Home() {
         )}
         {isDriver && <StatTile label="Active rides" value={activeRides ?? "–"} />}
         {isDriver && <StatTile label="Wallet balance" value={walletBalance != null ? `₹${walletBalance.toFixed(2)}` : "–"} />}
+      </div>
+
+      <div className="card">
+        <h3>Emergency contacts</h3>
+        <EmergencyContacts />
       </div>
 
       <div>

@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TopNav from "./components/TopNav";
 import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RideSearch from "./pages/RideSearch";
@@ -35,7 +36,7 @@ function Protected({ children, roles }) {
 
 function RootRedirect() {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Protected><Home /></Protected> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Protected><Home /></Protected> : <LandingPage />;
 }
 
 export default function App() {
