@@ -8,6 +8,7 @@ import com.rideshare.platform.location.service.RideLocationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ public class RideLocationController {
 
     private final RideLocationService rideLocationService;
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/location")
     public ApiResponse<Void> publish(@AuthenticationPrincipal String userPublicId,
                                       @PathVariable String ridePublicId,

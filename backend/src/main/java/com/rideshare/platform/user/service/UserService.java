@@ -41,10 +41,20 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
+    /** Grants ADMIN. Called only from AdminUserController, itself already ADMIN-gated by SecurityConfig. */
+    @Transactional
+    public UserProfileResponse promoteToAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("USER_001", "User not found."));
+        user.setRoleAdmin(true);
+        return toResponse(userRepository.save(user));
+    }
+
     private UserProfileResponse toResponse(User u) {
         return new UserProfileResponse(
                 u.getPublicId(), u.getName(), u.getEmail(), u.getMobile(), u.getGender(), u.getDob(),
                 u.getProfilePhotoUrl(), u.getPreferredLanguage(), u.getHomeLat(), u.getHomeLng(),
-                u.getOfficeLat(), u.getOfficeLng(), u.isRolePassenger(), u.isRoleDriver(), u.getAverageRating());
+                u.getOfficeLat(), u.getOfficeLng(), u.isRolePassenger(), u.isRoleDriver(), u.isRoleAdmin(),
+                u.getAverageRating());
     }
 }

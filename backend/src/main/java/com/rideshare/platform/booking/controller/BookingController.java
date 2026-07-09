@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final RecurringRideService recurringRideService;
 
+    @PreAuthorize("hasRole('PASSENGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<BookingResponse> create(@AuthenticationPrincipal String userPublicId,
@@ -40,12 +42,14 @@ public class BookingController {
         return ApiResponse.ok(bookingService.previewFare(request));
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/{publicId}/accept")
     public ApiResponse<BookingResponse> accept(@AuthenticationPrincipal String driverPublicId,
                                                 @PathVariable String publicId) {
         return ApiResponse.ok(bookingService.respondToBooking(driverPublicId, publicId, true), "Booking confirmed.");
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/{publicId}/reject")
     public ApiResponse<BookingResponse> reject(@AuthenticationPrincipal String driverPublicId,
                                                 @PathVariable String publicId) {
@@ -53,12 +57,14 @@ public class BookingController {
     }
 
     /** Accepts/rejects every booking created together via "book all upcoming occurrences" in one action. */
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/batch/{batchId}/accept")
     public ApiResponse<BookingBatchSummary> acceptBatch(@AuthenticationPrincipal String driverPublicId,
                                                          @PathVariable String batchId) {
         return ApiResponse.ok(recurringRideService.respondToBatch(driverPublicId, batchId, true), "Batch confirmed.");
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/batch/{batchId}/reject")
     public ApiResponse<BookingBatchSummary> rejectBatch(@AuthenticationPrincipal String driverPublicId,
                                                          @PathVariable String batchId) {
@@ -77,6 +83,7 @@ public class BookingController {
         return ApiResponse.ok(bookingService.myBookings(userPublicId));
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping("/driver")
     public ApiResponse<List<BookingResponse>> driverRequests(@AuthenticationPrincipal String driverUserPublicId) {
         return ApiResponse.ok(bookingService.driverBookingRequests(driverUserPublicId));

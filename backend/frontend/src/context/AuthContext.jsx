@@ -3,13 +3,12 @@ import * as authApi from "../api/auth";
 
 const AuthContext = createContext(null);
 
-function decodeJwtExpiryMs(token) {
+function decodeJwtPayload(token) {
   try {
     const payload = token.split(".")[1];
     const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-    const json = JSON.parse(atob(padded));
-    return json.exp ? json.exp * 1000 : null;
+    return JSON.parse(atob(padded));
   } catch {
     return null;
   }
@@ -18,8 +17,19 @@ function decodeJwtExpiryMs(token) {
 function hasValidAccessToken() {
   const token = localStorage.getItem("accessToken");
   if (!token) return false;
-  const expiryMs = decodeJwtExpiryMs(token);
+  const payload = decodeJwtPayload(token);
+  const expiryMs = payload?.exp ? payload.exp * 1000 : null;
   return !!expiryMs && Date.now() < expiryMs;
+}
+
+// The backend bakes roles (PASSENGER/DRIVER/ADMIN, see AuthService.issueTokens) into the JWT
+// at issue time - a role granted after the token was issued (e.g. onboarding as a driver
+// mid-session) only shows up here after the next login/refresh, matching backend behavior.
+function currentRoles() {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return [];
+  const payload = decodeJwtPayload(token);
+  return Array.isArray(payload?.roles) ? payload.roles : [];
 }
 
 export function AuthProvider({ children }) {
@@ -28,14 +38,23 @@ export function AuthProvider({ children }) {
     localStorage.clear();
     return false;
   });
+  const [roles, setRoles] = useState(() => (hasValidAccessToken() ? currentRoles() : []));
 
   // Catches the case where a tab is left open across expiry without any API
-  // call happening to trigger the axios 401 -> refresh/redirect flow.
+  // call happening to trigger the axios 401 -> refresh/redirect flow. Also re-syncs `roles`
+  // here, since client.js's silent-refresh interceptor replaces tokens in localStorage
+  // directly, bypassing loginWithTokens below.
   useEffect(() => {
     const interval = setInterval(() => {
       if (isAuthenticated && !hasValidAccessToken() && !localStorage.getItem("refreshToken")) {
         localStorage.clear();
         setIsAuthenticated(false);
+        setRoles([]);
+      } else if (isAuthenticated) {
+        setRoles((prev) => {
+          const next = currentRoles();
+          return prev.length === next.length && prev.every((r) => next.includes(r)) ? prev : next;
+        });
       }
     }, 30000);
     return () => clearInterval(interval);
@@ -45,6 +64,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("accessToken", tokenResponse.accessToken);
     localStorage.setItem("refreshToken", tokenResponse.refreshToken);
     setIsAuthenticated(true);
+    setRoles(currentRoles());
   }, []);
 
   const login = useCallback(async (payload) => {
@@ -62,10 +82,19 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.clear();
     setIsAuthenticated(false);
+    setRoles([]);
   }, []);
 
+  const hasRole = useCallback((role) => roles.includes(role), [roles]);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{
+      isAuthenticated, roles, hasRole,
+      isPassenger: roles.includes("PASSENGER"),
+      isDriver: roles.includes("DRIVER"),
+      isAdmin: roles.includes("ADMIN"),
+      login, register, logout
+    }}>
       {children}
     </AuthContext.Provider>
   );

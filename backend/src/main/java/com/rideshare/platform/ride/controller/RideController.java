@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class RideController {
 
     private final RideService rideService;
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<RideResponse> publish(@AuthenticationPrincipal String userPublicId,
@@ -35,23 +37,27 @@ public class RideController {
         return ApiResponse.ok(rideService.getByPublicId(publicId));
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping("/me")
     public ApiResponse<List<RideResponse>> myRides(@AuthenticationPrincipal String userPublicId) {
         return ApiResponse.ok(rideService.myRides(userPublicId));
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/{publicId}/cancel")
     public ApiResponse<RideResponse> cancel(@AuthenticationPrincipal String userPublicId,
                                              @PathVariable String publicId) {
         return ApiResponse.ok(rideService.cancel(userPublicId, publicId), "Ride cancelled.");
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/{publicId}/start")
     public ApiResponse<RideResponse> start(@AuthenticationPrincipal String userPublicId,
                                             @PathVariable String publicId) {
         return ApiResponse.ok(rideService.start(userPublicId, publicId), "Ride started.");
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/{publicId}/finish")
     public ApiResponse<RideResponse> finish(@AuthenticationPrincipal String userPublicId,
                                              @PathVariable String publicId) {

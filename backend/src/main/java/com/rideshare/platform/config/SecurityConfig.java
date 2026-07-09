@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,14 +26,19 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class
+SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /** Only the login/signup flow (and supporting OTP/refresh calls) and infra endpoints are
+     *  unauthenticated - everything else requires a valid JWT, and role-specific endpoints are
+     *  further restricted below (path matchers for whole-module cases, @PreAuthorize on
+     *  individual controller methods for controllers that mix driver/passenger actions). */
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/auth/**",
-            "/api/v1/search/**",
             "/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
@@ -49,8 +55,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/v1/reports/**").hasRole("ADMIN")
                     .requestMatchers("/api/v1/support/**").hasAnyRole("SUPPORT", "ADMIN")
-                    .requestMatchers("/api/v1/finance/**").hasAnyRole("FINANCE", "ADMIN")
+                    .requestMatchers("/api/v1/vehicles/**").hasRole("DRIVER")
                     .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

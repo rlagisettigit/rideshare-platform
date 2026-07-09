@@ -2,12 +2,17 @@ package com.rideshare.platform.auth.service;
 
 import com.rideshare.platform.auth.dto.*;
 import com.rideshare.platform.auth.entity.RefreshToken;
+import com.rideshare.platform.auth.oidc.OidcIdTokenVerifier;
+import com.rideshare.platform.auth.oidc.OidcProviderProperties;
+import com.rideshare.platform.auth.oidc.OidcVerificationConfig;
+import com.rideshare.platform.auth.oidc.VerifiedIdToken;
 import com.rideshare.platform.auth.repository.RefreshTokenRepository;
 import com.rideshare.platform.common.exception.ApiException;
 import com.rideshare.platform.driver.entity.Driver;
 import com.rideshare.platform.driver.entity.DriverStatus;
 import com.rideshare.platform.driver.repository.DriverRepository;
 import com.rideshare.platform.security.JwtService;
+import com.rideshare.platform.user.entity.IdentityProvider;
 import com.rideshare.platform.user.entity.User;
 import com.rideshare.platform.user.entity.UserStatus;
 import com.rideshare.platform.user.repository.UserRepository;
@@ -31,6 +36,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final OtpService otpService;
+    private final OidcIdTokenVerifier oidcIdTokenVerifier;
+    private final OidcProviderProperties oidcProviderProperties;
 
     @Transactional
     public TokenResponse register(RegisterRequest request) {
@@ -96,9 +103,32 @@ public class AuthService {
     }
 
     private User loginWithSocialProvider(LoginRequest request, String provider) {
-        // TODO: verify request.idToken() against Google/Apple Identity Provider public keys.
-        // Placeholder: look up (or JIT-provision) the user by the verified email claim.
-        throw ApiException.externalService("AUTH_005", provider + " sign-in is not configured in this environment.");
+        OidcVerificationConfig config = oidcProviderProperties.forProvider(provider)
+                .orElseThrow(() -> ApiException.externalService("AUTH_005", provider + " sign-in is not configured in this environment."));
+
+        VerifiedIdToken verified = oidcIdTokenVerifier.verify(request.idToken(), config);
+        if (verified.email() == null || !verified.emailVerified()) {
+            throw ApiException.unauthorized("AUTH_008", "This " + provider + " account has no verified email.");
+        }
+
+        // Matched by verified email rather than provider+subject: a user who originally
+        // registered with email/password and later taps "Continue with Google" using the same,
+        // provider-verified address logs into their existing account rather than getting a
+        // second, disconnected one. The provider has already cryptographically proven they
+        // control that address, so this is standard account-linking-by-verified-email behavior.
+        return userRepository.findByEmail(verified.email())
+                .orElseGet(() -> provisionSocialUser(verified, provider));
+    }
+
+    private User provisionSocialUser(VerifiedIdToken verified, String provider) {
+        User user = new User();
+        user.setName(verified.name() != null && !verified.name().isBlank() ? verified.name() : verified.email());
+        user.setEmail(verified.email());
+        user.setMobile(null); // not present on an ID token; see V13__nullable_mobile_for_social_signup.sql
+        user.setRolePassenger(true);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setIdentityProvider("GOOGLE".equals(provider) ? IdentityProvider.GOOGLE : IdentityProvider.APPLE);
+        return userRepository.save(user);
     }
 
     @Transactional
@@ -123,6 +153,7 @@ public class AuthService {
         List<String> roles = new ArrayList<>();
         if (user.isRolePassenger()) roles.add("PASSENGER");
         if (user.isRoleDriver()) roles.add("DRIVER");
+        if (user.isRoleAdmin()) roles.add("ADMIN");
 
         String access = jwtService.generateAccessToken(user.getPublicId(), roles);
         String refresh = jwtService.generateRefreshToken(user.getPublicId());

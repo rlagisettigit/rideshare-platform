@@ -18,5 +18,6 @@ public record UserProfileResponse(
         Double officeLng,
         boolean rolePassenger,
         boolean roleDriver,
+        boolean roleAdmin,
         BigDecimal averageRating
 ) {}

@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import NavRail from "./components/NavRail";
+import TopNav from "./components/TopNav";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RideSearch from "./pages/RideSearch";
@@ -18,15 +19,15 @@ import Ratings from "./pages/Ratings";
 function AppShell({ children }) {
   return (
     <div className="app-shell">
-      <NavRail />
+      <TopNav />
       <main className="main-content">{children}</main>
     </div>
   );
 }
 
-function Protected({ children }) {
+function Protected({ children, roles }) {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute roles={roles}>
       <AppShell>{children}</AppShell>
     </ProtectedRoute>
   );
@@ -34,7 +35,7 @@ function Protected({ children }) {
 
 function RootRedirect() {
   const { isAuthenticated } = useAuth();
-  return <Navigate to={isAuthenticated ? "/search" : "/login"} replace />;
+  return isAuthenticated ? <Protected><Home /></Protected> : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -45,15 +46,15 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/search" element={<Protected><RideSearch /></Protected>} />
-          <Route path="/publish" element={<Protected><RidePublish /></Protected>} />
+          <Route path="/publish" element={<Protected roles={["DRIVER"]}><RidePublish /></Protected>} />
           <Route path="/recurring-rides" element={<Protected><RecurringRideActivity /></Protected>} />
-          <Route path="/recurring-rides/publish" element={<Protected><RecurringRides /></Protected>} />
+          <Route path="/recurring-rides/publish" element={<Protected roles={["DRIVER"]}><RecurringRides /></Protected>} />
           <Route path="/bookings" element={<Protected><MyBookings /></Protected>} />
           <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
           <Route path="/payments" element={<Protected><Payments /></Protected>} />
           <Route path="/ratings" element={<Protected><Ratings /></Protected>} />
-          <Route path="/driver" element={<Protected><DriverDashboard /></Protected>} />
-          <Route path="/admin" element={<Protected><AdminDashboard /></Protected>} />
+          <Route path="/driver" element={<Protected roles={["DRIVER"]}><DriverDashboard /></Protected>} />
+          <Route path="/admin" element={<Protected roles={["ADMIN"]}><AdminDashboard /></Protected>} />
           <Route path="/" element={<RootRedirect />} />
         </Routes>
       </BrowserRouter>

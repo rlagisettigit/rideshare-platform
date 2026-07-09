@@ -7,6 +7,7 @@ import com.rideshare.platform.driver.service.DriverService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,11 +26,13 @@ public class DriverController {
         return ApiResponse.ok(driverService.onboard(userPublicId, request), "Driver application submitted for verification.");
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/availability/online")
     public ApiResponse<DriverResponse> goOnline(@AuthenticationPrincipal String userPublicId) {
         return ApiResponse.ok(driverService.setAvailability(userPublicId, true));
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PostMapping("/availability/offline")
     public ApiResponse<DriverResponse> goOffline(@AuthenticationPrincipal String userPublicId) {
         return ApiResponse.ok(driverService.setAvailability(userPublicId, false));

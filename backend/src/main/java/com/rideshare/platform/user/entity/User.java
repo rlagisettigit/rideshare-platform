@@ -30,7 +30,10 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true, length = 160)
     private String email;
 
-    @Column(nullable = false, unique = true, length = 20)
+    // Nullable: a user provisioned via Google/Apple sign-in has no phone number from the ID
+    // token (see AuthService.provisionSocialUser). Still unique - InnoDB allows multiple NULLs
+    // under a unique index, just not duplicate non-NULL values.
+    @Column(unique = true, length = 20)
     private String mobile;
 
     @Column(name = "password_hash")
@@ -60,6 +63,9 @@ public class User extends BaseEntity {
 
     @Column(name = "role_driver", nullable = false)
     private boolean roleDriver = false;
+
+    @Column(name = "role_admin", nullable = false)
+    private boolean roleAdmin = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "identity_provider")
