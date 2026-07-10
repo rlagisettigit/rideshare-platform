@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { getMyRecurringRides, cancelRecurringRide } from "../api/recurringRides";
 import { getMyRides, cancelRide, startRide, finishRide } from "../api/rides";
 import { getMyBookings, cancelBooking } from "../api/bookings";
+import PageHeader from "../components/PageHeader";
+import carRecurring from "../assets/images/car-recurring.jpg";
 
 const RIDE_STATUS_BADGE = {
   PENDING: "badge-pending", ACTIVE: "badge-active", IN_PROGRESS: "badge-active",
@@ -141,13 +143,12 @@ export default function RecurringRideActivity() {
 
   return (
     <div className="stack">
-      <div className="between">
-        <div>
-          <h1>Recurring rides</h1>
-          <p>Every date of a recurring series grouped into one thread, like a conversation - instead of one card per date.</p>
-        </div>
-        <Link to="/recurring-rides/publish" className="btn btn-primary">+ New recurring ride</Link>
-      </div>
+      <PageHeader
+        image={carRecurring}
+        title="Recurring rides"
+        description="Every date of a recurring series grouped into one thread, like a conversation - instead of one card per date."
+        actions={<Link to="/recurring-rides/publish" className="btn btn-primary">+ New recurring ride</Link>}
+      />
 
       {loading && <div className="empty-state">Loading…</div>}
 

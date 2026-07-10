@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getPendingReviews, getReceivedReviews } from "../api/reviews";
 import RatingModal from "../components/RatingModal";
+import PageHeader from "../components/PageHeader";
+import bannerRating from "../assets/images/banner-rating.jpg";
 
 const DIRECTION_LABEL = {
   RATE_DRIVER: "Rate your driver",
@@ -45,10 +47,7 @@ export default function Ratings() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>Ratings</h1>
-        <p>Rate drivers and passengers after a completed ride, and see the reviews you've received.</p>
-      </div>
+      <PageHeader image={bannerRating} title="Ratings" description="Rate drivers and passengers after a completed ride, and see the reviews you've received." />
 
       <div>
         <h3>Pending ratings</h3>

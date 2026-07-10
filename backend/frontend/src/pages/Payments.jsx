@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyPayments } from "../api/payments";
+import PageHeader from "../components/PageHeader";
+import bannerPayment from "../assets/images/banner-payment.jpg";
 
 const STATUS_CLASS = {
   SUCCESS: "badge-active",
@@ -20,10 +22,7 @@ export default function Payments() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>Payments</h1>
-        <p>Fares charged for your completed rides.</p>
-      </div>
+      <PageHeader image={bannerPayment} title="Payments" description="Fares charged for your completed rides." />
 
       {error && <div className="error-text">{error}</div>}
 

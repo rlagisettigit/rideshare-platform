@@ -3,6 +3,8 @@ import { publishRide } from "../api/rides";
 import { previewRoutes, fetchRoutePlaces } from "../api/routes";
 import { getMyVehicles } from "../api/driver";
 import AddressAutocomplete from "../components/AddressAutocomplete";
+import PageHeader from "../components/PageHeader";
+import driverCta from "../assets/images/driver-cta.jpg";
 
 const ROUTE_LABELS = {
   FASTEST: "Fastest route",
@@ -148,10 +150,7 @@ export default function RidePublish() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>Publish a ride</h1>
-        <p>Your route is generated automatically and indexed for search once published.</p>
-      </div>
+      <PageHeader image={driverCta} title="Publish a ride" description="Your route is generated automatically and indexed for search once published." />
 
       {vehicles.length === 0 && (
         <div className="card">

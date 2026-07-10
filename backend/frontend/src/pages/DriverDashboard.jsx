@@ -8,7 +8,22 @@ import { getPendingReviews } from "../api/reviews";
 import { postLocation } from "../api/location";
 import Modal from "../components/Modal";
 import RatingModal from "../components/RatingModal";
+import PageHeader from "../components/PageHeader";
+import driverCta from "../assets/images/driver-cta.jpg";
 import RideStopMap from "../components/RideStopMap";
+import carHatchback from "../assets/images/car-hatchback.jpg";
+import carSedan from "../assets/images/car-sedan.jpg";
+import carSuv from "../assets/images/car-suv.jpg";
+
+const CATEGORY_IMAGE = {
+  HATCHBACK: carHatchback,
+  SEDAN: carSedan,
+  SUV: carSuv,
+  MUV: carSuv,
+  VAN: carSuv,
+  COUPE: carSedan,
+  PICKUP: carSuv
+};
 
 const RIDE_STATUS_TABS = ["ALL", "PENDING", "ACTIVE", "IN_PROGRESS", "CANCELLED", "FINISHED"];
 const RIDE_STATUS_BADGE = {
@@ -347,15 +362,16 @@ export default function DriverDashboard() {
 
   return (
     <div className="stack">
-      <div className="between">
-        <div>
-          <h1>Driver dashboard</h1>
-          <p>Manage KYC, vehicles, availability, and your published rides.</p>
-        </div>
-        <button className={`btn ${online ? "btn-danger" : "btn-primary"}`} onClick={toggleOnline}>
-          {online ? "Go offline" : "Go online"}
-        </button>
-      </div>
+      <PageHeader
+        image={driverCta}
+        title="Driver dashboard"
+        description="Manage KYC, vehicles, availability, and your published rides."
+        actions={
+          <button className={`btn ${online ? "btn-danger" : "btn-primary"}`} onClick={toggleOnline}>
+            {online ? "Go offline" : "Go online"}
+          </button>
+        }
+      />
 
       <div className="row" style={{ borderBottom: "1px solid var(--color-line)", marginBottom: 4 }}>
         {["rides", "requests", "wallet", "vehicles", "kyc"].map((t) => (
@@ -601,7 +617,15 @@ export default function DriverDashboard() {
         <div className="stack">
           {vehicles.map((v) => (
             <div key={v.id} className="card between">
-              <span>{v.brand} {v.model}{v.category ? ` · ${v.category}` : ""} · {v.vehicleNumber} · {v.seatingCapacity} seats</span>
+              <div className="row">
+                <img
+                  src={CATEGORY_IMAGE[v.category] ?? carSedan}
+                  alt=""
+                  aria-hidden="true"
+                  className="vehicle-thumb"
+                />
+                <span>{v.brand} {v.model}{v.category ? ` · ${v.category}` : ""} · {v.vehicleNumber} · {v.seatingCapacity} seats</span>
+              </div>
               <div className="row">
                 <span className="badge badge-pending">{v.status}</span>
                 <button className="btn btn-secondary" onClick={() => handleEditVehicle(v)}>Edit</button>

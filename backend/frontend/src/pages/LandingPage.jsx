@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import EmergencyContacts from "../components/EmergencyContacts";
+import SectionDivider from "../components/SectionDivider";
+import heroRoad from "../assets/images/hero-road.jpg";
+import carHatchback from "../assets/images/car-hatchback.jpg";
+import carSedan from "../assets/images/car-sedan.jpg";
+import carSuv from "../assets/images/car-suv.jpg";
+import carRecurring from "../assets/images/car-recurring.jpg";
+import driverCta from "../assets/images/driver-cta.jpg";
+import appMockup from "../assets/images/app-mockup.jpg";
+import testimonialAnanya from "../assets/images/testimonial-ananya.jpg";
+import testimonialPriya from "../assets/images/testimonial-priya.jpg";
+import testimonialVikram from "../assets/images/testimonial-vikram.jpg";
 
 const ROUTE_COVERAGE = ["Hyderabad", "Suryapet", "Khammam", "Vijayawada", "Ongole", "Nellore", "Tirupati"];
 
@@ -21,10 +32,10 @@ const POPULAR_ROUTES = [
 ];
 
 const RIDE_CATEGORIES = [
-  { icon: "🚗", title: "Hatchback", desc: "Budget-friendly rides for solo travelers or pairs." },
-  { icon: "🚙", title: "Sedan", desc: "Extra comfort and boot space for longer trips." },
-  { icon: "🚐", title: "SUV", desc: "Room for groups traveling together with luggage." },
-  { icon: "🔁", title: "Recurring", desc: "Book a seat on the same commute, every day it runs." }
+  { image: carHatchback, title: "Hatchback", desc: "Budget-friendly rides for solo travelers or pairs." },
+  { image: carSedan, title: "Sedan", desc: "Extra comfort and boot space for longer trips." },
+  { image: carSuv, title: "SUV", desc: "Room for groups traveling together with luggage." },
+  { image: carRecurring, title: "Recurring", desc: "Book a seat on the same commute, every day it runs." }
 ];
 
 const FEATURES = [
@@ -37,9 +48,9 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Ananya R.", role: "Daily commuter, Hyderabad", quote: "I book the same Suryapet to Hyderabad seat every weekday now. It's cheaper than the bus and the driver's already someone I trust." },
-  { name: "Vikram S.", role: "Driver, Bengaluru", quote: "I was driving to work alone anyway. Now three seats are filled most days and it covers my fuel for the week." },
-  { name: "Priya M.", role: "Passenger, Vijayawada", quote: "The live tracking meant I wasn't standing at the pickup point guessing. I could see the car approaching in real time." }
+  { name: "Ananya R.", role: "Daily commuter, Hyderabad", photo: testimonialAnanya, quote: "I book the same Suryapet to Hyderabad seat every weekday now. It's cheaper than the bus and the driver's already someone I trust." },
+  { name: "Vikram S.", role: "Driver, Bengaluru", photo: testimonialVikram, quote: "I was driving to work alone anyway. Now three seats are filled most days and it covers my fuel for the week." },
+  { name: "Priya M.", role: "Passenger, Vijayawada", photo: testimonialPriya, quote: "The live tracking meant I wasn't standing at the pickup point guessing. I could see the car approaching in real time." }
 ];
 
 const STATISTICS = [
@@ -210,30 +221,34 @@ export default function LandingPage() {
 
       {/* Hero Search Section */}
       <section className="lp-hero">
-        <div className="lp-hero-copy">
-          <h1>Share the ride. Split the cost.</h1>
-          <p>
-            Waypoint matches passengers and drivers along shared routes across India -
-            book a seat, publish a ride, or set up a recurring commute in minutes.
-          </p>
+        <img src={heroRoad} alt="" className="lp-hero-bg" aria-hidden="true" />
+        <div className="lp-hero-overlay" />
+        <div className="lp-hero-inner">
+          <div className="lp-hero-copy">
+            <h1>Share the ride. Split the cost.</h1>
+            <p>
+              Waypoint matches passengers and drivers along shared routes across India -
+              book a seat, publish a ride, or set up a recurring commute in minutes.
+            </p>
+          </div>
+          <form className="lp-hero-search card" onSubmit={(e) => e.preventDefault()}>
+            <div className="field-row">
+              <div className="field">
+                <label htmlFor="lp-from">From</label>
+                <input id="lp-from" type="text" placeholder="Leaving from" />
+              </div>
+              <div className="field">
+                <label htmlFor="lp-to">To</label>
+                <input id="lp-to" type="text" placeholder="Going to" />
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="lp-date">Date</label>
+              <input id="lp-date" type="date" />
+            </div>
+            <Link to="/login" className="btn btn-primary lp-hero-cta">Search rides</Link>
+          </form>
         </div>
-        <form className="lp-hero-search card" onSubmit={(e) => e.preventDefault()}>
-          <div className="field-row">
-            <div className="field">
-              <label htmlFor="lp-from">From</label>
-              <input id="lp-from" type="text" placeholder="Leaving from" />
-            </div>
-            <div className="field">
-              <label htmlFor="lp-to">To</label>
-              <input id="lp-to" type="text" placeholder="Going to" />
-            </div>
-          </div>
-          <div className="field">
-            <label htmlFor="lp-date">Date</label>
-            <input id="lp-date" type="date" />
-          </div>
-          <Link to="/login" className="btn btn-primary lp-hero-cta">Search rides</Link>
-        </form>
       </section>
 
       {/* Why Choose Us */}
@@ -259,6 +274,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <SectionDivider />
 
       <RidesAlongYourRoute />
       <RouteCoverage />
@@ -314,11 +331,14 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <SectionDivider />
+
       <CostComparison />
       <EnvironmentalImpact />
 
       {/* Become a Driver */}
       <section className="lp-section lp-driver-cta" id="become-a-driver">
+        <img src={driverCta} alt="" className="lp-driver-cta-bg" aria-hidden="true" />
         <div className="lp-driver-cta-copy">
           <h2>Become a Driver</h2>
           <p>
@@ -362,6 +382,8 @@ export default function LandingPage() {
         <EmergencyContacts className="ec-grid-lp" />
       </section>
 
+      <SectionDivider />
+
       {/* Ride Categories */}
       <section className="lp-section" id="ride-categories">
         <div className="lp-section-head">
@@ -369,10 +391,12 @@ export default function LandingPage() {
         </div>
         <div className="lp-grid-4">
           {RIDE_CATEGORIES.map((c) => (
-            <div className="card lp-icon-card" key={c.title}>
-              <span className="lp-icon">{c.icon}</span>
-              <h3>{c.title}</h3>
-              <p>{c.desc}</p>
+            <div className="lp-photo-card" key={c.title}>
+              <img src={c.image} alt={c.title} className="lp-photo-card-img" />
+              <div className="lp-photo-card-body">
+                <h3>{c.title}</h3>
+                <p>{c.desc}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -402,15 +426,21 @@ export default function LandingPage() {
         <div className="lp-grid-3">
           {TESTIMONIALS.map((t) => (
             <div className="card lp-testimonial" key={t.name}>
+              <span className="lp-quote-mark">"</span>
               <p className="lp-quote">"{t.quote}"</p>
-              <div>
-                <strong>{t.name}</strong>
-                <div className="muted">{t.role}</div>
+              <div className="row">
+                <img src={t.photo} alt={t.name} className="lp-avatar-photo" />
+                <div>
+                  <strong>{t.name}</strong>
+                  <div className="muted">{t.role}</div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </section>
+
+      <SectionDivider />
 
       {/* Statistics */}
       <section className="lp-section lp-stats" id="statistics">
@@ -436,6 +466,8 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* FAQ */}
       <section className="lp-section" id="faq">
         <div className="lp-section-head">
@@ -456,9 +488,12 @@ export default function LandingPage() {
 
       {/* Download App */}
       <section className="lp-section lp-download" id="download-app">
-        <h2>Take Waypoint with you</h2>
-        <p>Our mobile app is on the way. Sign up now and we'll let you know the moment it lands.</p>
-        <Link to="/register" className="btn btn-primary">Get notified</Link>
+        <div className="lp-download-copy">
+          <h2>Take Waypoint with you</h2>
+          <p>Our mobile app is on the way. Sign up now and we'll let you know the moment it lands.</p>
+          <Link to="/register" className="btn btn-primary">Get notified</Link>
+        </div>
+        <img src={appMockup} alt="Waypoint app preview on a phone" className="lp-download-image" />
       </section>
 
       {/* Footer */}

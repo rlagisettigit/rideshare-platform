@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyNotifications } from "../api/notifications";
+import PageHeader from "../components/PageHeader";
+import appMockup from "../assets/images/app-mockup.jpg";
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState(null);
@@ -13,10 +15,7 @@ export default function Notifications() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>Notifications</h1>
-        <p>Updates about your rides and bookings.</p>
-      </div>
+      <PageHeader image={appMockup} title="Notifications" description="Updates about your rides and bookings." />
 
       {error && <div className="error-text">{error}</div>}
 

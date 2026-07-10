@@ -9,7 +9,13 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter \\\\\"Name='node.exe'\\\\\" | Select-Object ProcessId, CommandLine\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
-      "Bash(node emergency-check.js)"
+      "Bash(node emergency-check.js)",
+      "Bash(node landing-check.js)",
+      "Bash(npm run *)",
+      "Bash(node hero-zoom.js)",
+      "Bash(node nav-check.js)",
+      "WebSearch",
+      "WebFetch(domain:www.pexels.com)"
     ]
   }
 }

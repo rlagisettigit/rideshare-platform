@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import client from "../api/client";
+import PageHeader from "../components/PageHeader";
+import bannerAnalytics from "../assets/images/banner-analytics.jpg";
 
 export default function AdminDashboard() {
   const [summary, setSummary] = useState(null);
@@ -13,10 +15,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>Admin</h1>
-        <p>Platform-wide operational summary.</p>
-      </div>
+      <PageHeader image={bannerAnalytics} title="Admin" description="Platform-wide operational summary." />
 
       {error && <div className="card"><span className="error-text">{error}</span></div>}
 

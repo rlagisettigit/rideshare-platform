@@ -5,6 +5,8 @@ import { getMyBookings, getDriverBookingRequests } from "../api/bookings";
 import { getMyRides } from "../api/rides";
 import { getMyWallet } from "../api/wallet";
 import EmergencyContacts from "../components/EmergencyContacts";
+import PageHeader from "../components/PageHeader";
+import bannerRoad from "../assets/images/banner-road.jpg";
 
 function timeOfDayGreeting() {
   const hour = new Date().getHours();
@@ -70,16 +72,12 @@ export default function Home() {
 
   return (
     <div className="stack">
-      <div className="card">
-        <span className="muted" style={{ textTransform: "uppercase", letterSpacing: "0.04em", fontSize: "var(--text-xs)" }}>
-          {timeOfDayGreeting()}
-        </span>
-        <h1 style={{ marginTop: "var(--space-1)" }}>Welcome to Waypoint</h1>
-        <p style={{ marginBottom: 0, maxWidth: 560 }}>
-          Find a ride, publish one of your own, or keep tabs on the trips you've already got lined up -
-          everything's one click away below.
-        </p>
-      </div>
+      <PageHeader
+        image={bannerRoad}
+        kicker={timeOfDayGreeting()}
+        title="Welcome to Waypoint"
+        description="Find a ride, publish one of your own, or keep tabs on the trips you've already got lined up - everything's one click away below."
+      />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "var(--space-4)" }}>
         <StatTile label="Upcoming bookings" value={upcomingBookings ?? "–"} />

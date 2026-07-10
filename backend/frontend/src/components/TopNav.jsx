@@ -39,11 +39,16 @@ function NavGroup({ label, items }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="nav-group" onMouseLeave={() => setOpen(false)}>
+    <div
+      className="nav-group"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         type="button"
-        className="nav-group-trigger"
+        className={"nav-group-trigger" + (open ? " active" : "")}
         onClick={() => setOpen((v) => !v)}
+        onFocus={() => setOpen(true)}
         aria-expanded={open}
       >
         {label} <span className="nav-caret">▾</span>

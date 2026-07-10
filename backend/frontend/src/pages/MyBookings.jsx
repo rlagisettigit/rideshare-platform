@@ -3,6 +3,8 @@ import { getMyBookings, cancelBooking } from "../api/bookings";
 import { getPendingReviews } from "../api/reviews";
 import RatingModal from "../components/RatingModal";
 import DriverTrackingMap from "../components/DriverTrackingMap";
+import PageHeader from "../components/PageHeader";
+import bannerRoad from "../assets/images/banner-road.jpg";
 
 const STATUS_CLASS = {
   CONFIRMED: "badge-active",
@@ -72,10 +74,7 @@ export default function MyBookings() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>My bookings</h1>
-        <p>Requests, confirmations, and past rides.</p>
-      </div>
+      <PageHeader image={bannerRoad} title="My bookings" description="Requests, confirmations, and past rides." />
 
       {error && <div className="error-text">{error}</div>}
 

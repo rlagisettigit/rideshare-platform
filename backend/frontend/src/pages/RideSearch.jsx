@@ -5,6 +5,8 @@ import RideCard from "../components/RideCard";
 import AddressAutocomplete from "../components/AddressAutocomplete";
 import MapLocationPicker from "../components/MapLocationPicker";
 import RecurringBookingModal from "../components/RecurringBookingModal";
+import PageHeader from "../components/PageHeader";
+import bannerGps from "../assets/images/banner-gps.jpg";
 
 function todayDateString() {
   const d = new Date();
@@ -93,10 +95,7 @@ export default function RideSearch() {
 
   return (
     <div className="stack">
-      <div>
-        <h1>Find a ride</h1>
-        <p>Search rides between any two points along a driver's route.</p>
-      </div>
+      <PageHeader image={bannerGps} title="Find a ride" description="Search rides between any two points along a driver's route." />
 
       <form onSubmit={handleSearch} className="card stack">
         <div className="field-row" style={{ alignItems: "flex-end" }}>

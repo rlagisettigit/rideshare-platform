@@ -4,6 +4,8 @@ import { createRecurringRide, getMyRecurringRides, cancelRecurringRide } from ".
 import { previewRoutes, fetchRoutePlaces } from "../api/routes";
 import { getMyVehicles } from "../api/driver";
 import AddressAutocomplete from "../components/AddressAutocomplete";
+import PageHeader from "../components/PageHeader";
+import carRecurring from "../assets/images/car-recurring.jpg";
 
 const ROUTE_LABELS = {
   FASTEST: "Fastest route",
@@ -180,11 +182,12 @@ export default function RecurringRides() {
 
   return (
     <div className="stack">
-      <div>
-        <Link to="/recurring-rides">← Back to recurring rides overview</Link>
-        <h1>Publish a recurring ride</h1>
-        <p>Offer the same trip on a repeating schedule - each date books independently, just like a one-off ride.</p>
-      </div>
+      <PageHeader
+        image={carRecurring}
+        title="Publish a recurring ride"
+        description="Offer the same trip on a repeating schedule - each date books independently, just like a one-off ride."
+        eyebrow={<Link to="/recurring-rides">← Back to recurring rides overview</Link>}
+      />
 
       {vehicles.length === 0 && (
         <div className="card">
