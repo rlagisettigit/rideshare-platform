@@ -2,10 +2,33 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const MINIMUM_AGE_YEARS = 18;
+
+function maxDobForMinimumAge() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - MINIMUM_AGE_YEARS);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function isAtLeast18(dob) {
+  if (!dob) return false;
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const hasHadBirthdayThisYear =
+    today.getMonth() > birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+  if (!hasHadBirthdayThisYear) age -= 1;
+  return age >= MINIMUM_AGE_YEARS;
+}
+
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", asDriver: false });
+  const [form, setForm] = useState({
+    name: "", email: "", mobile: "", password: "", confirmPassword: "",
+    gender: "", dob: "", asDriver: false
+  });
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -16,9 +39,24 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+
+    const clientErrors = {};
+    if (form.password !== form.confirmPassword) {
+      clientErrors.confirmPassword = "Passwords don't match.";
+    }
+    if (!isAtLeast18(form.dob)) {
+      clientErrors.dob = `You must be at least ${MINIMUM_AGE_YEARS} years old to register.`;
+    }
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
+      setError("Please fix the highlighted fields.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await register(form);
+      const { confirmPassword, ...payload } = form;
+      await register(payload);
       navigate("/search");
     } catch (err) {
       if (err?.fieldErrors?.length) {
@@ -54,9 +92,30 @@ export default function Register() {
             {fieldErrors.mobile && <div className="field-error">{fieldErrors.mobile}</div>}
           </div>
           <div className="field">
+            <label htmlFor="gender">Gender</label>
+            <select id="gender" value={form.gender} onChange={update("gender")}>
+              <option value="">Prefer not to say</option>
+              <option value="FEMALE">Female</option>
+              <option value="MALE">Male</option>
+              <option value="OTHER">Other</option>
+            </select>
+            {fieldErrors.gender && <div className="field-error">{fieldErrors.gender}</div>}
+          </div>
+          <div className="field">
+            <label htmlFor="dob">Date of birth</label>
+            <input id="dob" type="date" max={maxDobForMinimumAge()} value={form.dob} onChange={update("dob")} required />
+            <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Waypoint.</span>
+            {fieldErrors.dob && <div className="field-error">{fieldErrors.dob}</div>}
+          </div>
+          <div className="field">
             <label htmlFor="password">Password</label>
             <input id="password" type="password" value={form.password} onChange={update("password")} required />
             {fieldErrors.password && <div className="field-error">{fieldErrors.password}</div>}
+          </div>
+          <div className="field">
+            <label htmlFor="confirmPassword">Confirm password</label>
+            <input id="confirmPassword" type="password" value={form.confirmPassword} onChange={update("confirmPassword")} required />
+            {fieldErrors.confirmPassword && <div className="field-error">{fieldErrors.confirmPassword}</div>}
           </div>
           <label className="checkbox-field">
             <input type="checkbox" checked={form.asDriver} onChange={update("asDriver")} />

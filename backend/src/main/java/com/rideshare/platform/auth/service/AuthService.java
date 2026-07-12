@@ -7,6 +7,7 @@ import com.rideshare.platform.auth.oidc.OidcProviderProperties;
 import com.rideshare.platform.auth.oidc.OidcVerificationConfig;
 import com.rideshare.platform.auth.oidc.VerifiedIdToken;
 import com.rideshare.platform.auth.repository.RefreshTokenRepository;
+import com.rideshare.platform.common.AgeValidator;
 import com.rideshare.platform.common.exception.ApiException;
 import com.rideshare.platform.driver.entity.Driver;
 import com.rideshare.platform.driver.entity.DriverStatus;
@@ -47,12 +48,15 @@ public class AuthService {
         if (userRepository.existsByMobile(request.mobile())) {
             throw ApiException.conflict("AUTH_002", "Mobile number is already registered.");
         }
+        AgeValidator.requireAtLeast18(request.dob());
 
         User user = new User();
         user.setName(request.name());
         user.setEmail(request.email());
         user.setMobile(request.mobile());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setGender(request.gender());
+        user.setDob(request.dob());
         user.setRolePassenger(true);
         user.setRoleDriver(request.asDriver());
         user.setStatus(UserStatus.ACTIVE);

@@ -27,6 +27,7 @@ const NAV_ENTRIES = [
   {
     label: "Account",
     items: [
+      { to: "/profile", label: "Edit profile" },
       { to: "/payments", label: "Payments" },
       { to: "/ratings", label: "Ratings" },
       { to: "/notifications", label: "Notifications" }

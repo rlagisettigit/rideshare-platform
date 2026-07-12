@@ -2,10 +2,14 @@ package com.rideshare.platform.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-/** FR-001 User Registration. */
+import java.time.LocalDate;
+
+/** FR-001 User Registration. Minimum-age (18+) enforcement lives in AuthService.register(), not here - it's a computed business rule, not a static format check. */
 public record RegisterRequest(
         @NotBlank @Size(max = 120) String name,
         @NotBlank @Email String email,
@@ -15,5 +19,7 @@ public record RegisterRequest(
                 regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$",
                 message = "Password must be at least 8 characters and include a letter and a digit"
         ) String password,
+        String gender,
+        @NotNull @Past(message = "Date of birth must be in the past") LocalDate dob,
         boolean asDriver
 ) {}

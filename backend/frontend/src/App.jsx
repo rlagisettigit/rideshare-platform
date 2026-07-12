@@ -11,6 +11,7 @@ import RidePublish from "./pages/RidePublish";
 import RecurringRides from "./pages/RecurringRides";
 import RecurringRideActivity from "./pages/RecurringRideActivity";
 import MyBookings from "./pages/MyBookings";
+import EditProfile from "./pages/EditProfile";
 import DriverDashboard from "./pages/DriverDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Notifications from "./pages/Notifications";
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/recurring-rides" element={<Protected><RecurringRideActivity /></Protected>} />
           <Route path="/recurring-rides/publish" element={<Protected roles={["DRIVER"]}><RecurringRides /></Protected>} />
           <Route path="/bookings" element={<Protected><MyBookings /></Protected>} />
+          <Route path="/profile" element={<Protected><EditProfile /></Protected>} />
           <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
           <Route path="/payments" element={<Protected><Payments /></Protected>} />
           <Route path="/ratings" element={<Protected><Ratings /></Protected>} />

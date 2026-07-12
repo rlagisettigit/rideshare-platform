@@ -1,5 +1,6 @@
 package com.rideshare.platform.user.service;
 
+import com.rideshare.platform.common.AgeValidator;
 import com.rideshare.platform.common.exception.ApiException;
 import com.rideshare.platform.user.dto.UpdateProfileRequest;
 import com.rideshare.platform.user.dto.UserProfileResponse;
@@ -31,7 +32,10 @@ public class UserService {
         if (request.name() != null) user.setName(request.name());
         if (request.profilePhotoUrl() != null) user.setProfilePhotoUrl(request.profilePhotoUrl());
         if (request.gender() != null) user.setGender(request.gender());
-        if (request.dob() != null) user.setDob(request.dob());
+        if (request.dob() != null) {
+            AgeValidator.requireAtLeast18(request.dob());
+            user.setDob(request.dob());
+        }
         if (request.preferredLanguage() != null) user.setPreferredLanguage(request.preferredLanguage());
         if (request.homeLat() != null) user.setHomeLat(request.homeLat());
         if (request.homeLng() != null) user.setHomeLng(request.homeLng());
