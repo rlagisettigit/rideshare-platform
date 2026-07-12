@@ -4,16 +4,14 @@ services:
     container_name: rideshare-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: Rams@1234
       MYSQL_DATABASE: rideshare
-      MYSQL_USER: root
-      MYSQL_PASSWORD: Rams@1234
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pRams@1234"]
       interval: 5s
       timeout: 5s
       retries: 10

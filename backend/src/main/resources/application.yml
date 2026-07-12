@@ -15,7 +15,7 @@ spring:
     # hours reads back as having already departed 5 hours ago). sessionVariables forces UTC on
     # the actual connection so it matches what serverTimezone=UTC already assumes, instead of
     # relying on the DB server's own default being configured correctly.
-    url: jdbc:mysql://localhost:3306/rideshare?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&sessionVariables=time_zone='%2B00:00'
+    url: jdbc:mysql://localhost:3307/rideshare?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&sessionVariables=time_zone='%2B00:00'
     username: root
     password: Rams@1234
     driver-class-name: com.mysql.cj.jdbc.Driver

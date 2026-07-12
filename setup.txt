@@ -17,8 +17,66 @@ that are NOT in git (must be recreated manually), and the startup sequence.
   Everything else (MySQL, Redis, Kafka, Zookeeper, Kafka UI) runs as Docker
   containers via docker-compose.yml at the repo root - no local install needed.
 
+  NOTE - JDK version check: having multiple JDKs installed is common. Confirm
+  JAVA_HOME / the JDK Maven actually uses is 21, not an older one:
 
-2. INFRASTRUCTURE SERVICES (docker-compose.yml)
+      mvn -version
+      # look at the "Java version:" line in the output
+
+  If it reports 17 (or anything other than 21), set JAVA_HOME to your JDK 21
+  install before running mvn spring-boot:run, or the build may fail or behave
+  unexpectedly.
+
+
+2. STARTING DOCKER DESKTOP
+------------------------------
+Docker Desktop must be running before "docker compose up -d" will work. If a
+docker command fails with an error like:
+
+    unable to get image '...': failed to connect to the docker API at
+    npipe:////./pipe/dockerDesktopLinuxEngine ... The system cannot find the
+    file specified.
+
+it means Docker Desktop itself is not running (this is not an image/network
+problem). Fix:
+
+  1. Launch Docker Desktop (Start Menu -> "Docker Desktop", or the pinned
+     icon). Confirm it's actually running first with `tasklist | grep -i
+     docker` (bash) or `Get-Process docker*` (PowerShell) - nothing running
+     means it needs to be launched.
+  2. Wait for the whale icon in the system tray to stop animating (steady =
+     ready). Takes ~30-90s.
+  3. Confirm engine mode is Linux containers (right-click tray icon) - this
+     project's images (mysql, redis, kafka, etc.) are all Linux images.
+  4. If it won't start or hangs: right-click tray icon -> Quit Docker
+     Desktop, then relaunch it as Administrator.
+  5. If it still fails: restart the WSL2 backend -
+       wsl --shutdown
+     (run from an Administrator PowerShell), then relaunch Docker Desktop.
+  6. Verify it's up before moving on:
+       docker info
+     This should return engine details with no errors.
+
+  NOTE - port 3306 conflict: if `docker compose up -d` fails on the mysql
+  container with an error like:
+
+      Error response from daemon: ports are not available: exposing port
+      TCP 0.0.0.0:3306 -> 127.0.0.1:0: listen tcp 0.0.0.0:3306: bind: Only
+      one usage of each socket address ... is normally permitted.
+
+  something else on the host (commonly a native MySQL80 Windows service) is
+  already bound to 3306. Check with:
+
+      netstat -ano | grep ":3306"
+      tasklist //FI "PID eq <pid from above>"
+
+  This project's docker-compose.yml maps MySQL to host port 3307 instead of
+  3306 (see table below) specifically to avoid this conflict with a locally
+  installed MySQL server. If you still hit a port conflict, whatever's
+  holding 3307 needs its own resolution (stop the process, or remap again).
+
+
+3. INFRASTRUCTURE SERVICES (docker-compose.yml)
 -------------------------------------------------
 Start all of them with:
 
@@ -30,14 +88,28 @@ Check health with:
 
   Service     Image                              Port(s)          Credentials                        Used for
   ----------  ---------------------------------  ---------------  ----------------------------------  --------------------------------------------------
-  MySQL       mysql:8.4                          3306             db=rideshare, user=root,            Primary datastore, Flyway-migrated on backend start
-                                                                   pass=Rams@1234
+  MySQL       mysql:8.4                          3307 -> 3306     db=rideshare, user=root,            Primary datastore, Flyway-migrated on backend start
+                                                                   pass=Rams@1234                      (host port 3307 - see NOTE in section 2, avoids
+                                                                                                        conflict with a native MySQL80 Windows service)
   Redis       redis:7-alpine                     6379             none                                H3 route-index (RouteRedisIndexService) + live
                                                                                                         location tracking (RideLocationService)
   Zookeeper   confluentinc/cp-zookeeper:7.6.1     2181             none                                Kafka coordination (required by this Kafka version)
   Kafka       confluentinc/cp-kafka:7.6.1         9092             none                                Event bus (topics below)
   Kafka UI    provectuslabs/kafka-ui              8081 -> 8080     none                                Browser UI to inspect topics/messages:
                                                                                                         http://localhost:8081
+
+  NOTE - MySQL container crash-loop fix (already applied in this repo): the
+  mysql service used to also set MYSQL_USER: root / MYSQL_PASSWORD, which
+  MySQL 8.4's entrypoint rejects outright ("MYSQL_USER=root ... cannot be
+  used for the root user"), causing an endless restart loop. Fixed by
+  removing those two vars and setting MYSQL_ROOT_PASSWORD directly to
+  Rams@1234 (matching what application.yml already expects for the root
+  user). If you ever see this crash-loop again after editing
+  docker-compose.yml, check for MYSQL_USER=root being reintroduced. Recovery
+  if it happens: `docker compose down mysql && docker volume rm
+  rideshare-platform_mysql-data && docker compose up -d mysql` (safe only if
+  you don't need to keep existing DB data - Flyway recreates the schema on
+  backend startup).
 
 Kafka topics (auto-created, KAFKA_AUTO_CREATE_TOPICS_ENABLE=true - nothing to
 pre-create manually). Defined in KafkaTopics.java:
@@ -67,7 +139,7 @@ Connectivity notes:
     migrations) automatically on backend startup.
 
 
-3. FILES YOU MUST RECREATE MANUALLY (gitignored - never committed)
+4. FILES YOU MUST RECREATE MANUALLY (gitignored - never committed)
 ---------------------------------------------------------------------
 These hold secrets, so they are excluded via .gitignore and will not exist
 after a fresh clone. Create them yourself on the new machine.
@@ -82,7 +154,7 @@ after a fresh clone. Create them yourself on the new machine.
   b) backend/.env  (copy backend/.env.example and fill in real values)
 
      DB_HOST=localhost
-     DB_PORT=3306
+     DB_PORT=3307
      DB_NAME=rideshare
      DB_USERNAME=rideshare
      DB_PASSWORD=rideshare
@@ -103,12 +175,20 @@ after a fresh clone. Create them yourself on the new machine.
      GOOGLE_STATIC_MAPS_API_KEY=
 
      NOTE - known mismatch: src/main/resources/application.yml currently
-     hardcodes the MySQL datasource credentials directly as root/Rams@1234
-     (matching docker-compose.yml) instead of reading DB_USERNAME/DB_PASSWORD
-     from env. The DB_* values in .env are documented but currently unused.
-     A fresh machine still works out of the box because the hardcoded creds
-     match docker-compose.yml - just don't expect changing .env's DB_* vars
-     to have any effect unless application.yml is updated to read them.
+     hardcodes the MySQL datasource URL AND credentials directly (host port
+     3307, user/pass root/Rams@1234, matching docker-compose.yml) instead of
+     reading DB_HOST/DB_PORT/DB_USERNAME/DB_PASSWORD from env. The DB_*
+     values in .env are documented but currently unused. A fresh machine
+     still works out of the box because the hardcoded values match
+     docker-compose.yml - just don't expect changing .env's DB_* vars to
+     have any effect unless application.yml is updated to read them.
+
+     NOTE - why 3307, not the default 3306: MySQL's default port 3306 is
+     commonly already taken on Windows dev machines by a native MySQL
+     Windows service (e.g. "MySQL80"). To avoid that conflict,
+     docker-compose.yml maps the container to host port 3307 instead, and
+     application.yml's datasource url points at localhost:3307 to match.
+     See section 2 NOTE for how this was diagnosed/fixed.
 
   If MAPPLS_API_KEY is left blank, MapplsRoutingProvider falls back to a
   deterministic straight-line route generator, so the full
@@ -118,31 +198,38 @@ after a fresh clone. Create them yourself on the new machine.
   without touching code; in-app notifications are unaffected.
 
 
-4. STARTUP SEQUENCE
+5. STARTUP SEQUENCE
 ----------------------
   # 1. Clone
   git clone https://github.com/rlagisettigit/rideshare-platform.git
   cd rideshare-platform
 
-  # 2. Start infra (MySQL, Redis, Kafka, Zookeeper, Kafka UI)
+  # 2. Start Docker Desktop (see section 2), then confirm it's up
+  docker info
+
+  # 3. Start infra (MySQL, Redis, Kafka, Zookeeper, Kafka UI)
   docker compose up -d
+  docker compose ps
 
-  # 3. Recreate backend/config/application.yml and backend/.env (see section 3)
+  # 4. Recreate backend/config/application.yml and backend/.env (see section 4)
+  cp backend/.env.example backend/.env
+  # then edit backend/.env with real values
 
-  # 4. Run backend (Flyway migrates DB automatically on startup)
+  # 5. Confirm Maven is using JDK 21 (see section 1 NOTE), then run backend
+  #    (Flyway migrates DB automatically on startup)
   cd backend
   mvn spring-boot:run
   # API:     http://localhost:8080
   # Swagger: http://localhost:8080/swagger-ui.html
 
-  # 5. Run frontend (separate terminal)
+  # 6. Run frontend (separate terminal)
   cd backend/frontend
   npm install
   npm run dev
   # UI: http://localhost:5173 (proxies /api/v1/* to the backend)
 
 
-5. NOT INCLUDED / KNOWN GAPS (from README.md)
+6. NOT INCLUDED / KNOWN GAPS (from README.md)
 -------------------------------------------------
   - Load testing against stated P95 targets
   - Production secrets management
