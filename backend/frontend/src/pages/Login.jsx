@@ -71,6 +71,10 @@ export default function Login() {
         <p className="muted" style={{ marginTop: 16 }}>
           New here? <Link to="/register">Create an account</Link>
         </p>
+        <p className="muted" style={{ marginTop: 4, fontSize: "var(--text-xs)" }}>
+          By continuing, you agree to our <Link to="/terms">Terms & Conditions</Link> and{" "}
+          <Link to="/privacy">Privacy Policy</Link>.
+        </p>
       </div>
     </div>
   );

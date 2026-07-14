@@ -27,6 +27,7 @@ export default function GoogleSignInButton({ onCredential, text = "continue_with
           size: "large",
           shape: "rectangular",
           text,
+          logo_alignment: "center",
           width: 320
         });
       })

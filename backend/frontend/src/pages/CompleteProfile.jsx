@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { updateMyProfile } from "../api/users";
+import LegalModal from "../components/legal/LegalModal";
 
 const MINIMUM_AGE_YEARS = 18;
 
@@ -27,11 +28,23 @@ export default function CompleteProfile() {
   const { refreshProfileStatus } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ mobile: "", gender: "", dob: "" });
+  const [openLegalDoc, setOpenLegalDoc] = useState(null); // null | "terms" | "privacy"
+  const [viewedTerms, setViewedTerms] = useState(false);
+  const [viewedPrivacy, setViewedPrivacy] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const bothViewed = viewedTerms && viewedPrivacy;
+
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+
+  const openLegal = (doc) => {
+    setOpenLegalDoc(doc);
+    if (doc === "terms") setViewedTerms(true);
+    else setViewedPrivacy(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +55,9 @@ export default function CompleteProfile() {
     if (!form.gender) clientErrors.gender = "Please select an option.";
     if (!isAtLeast18(form.dob)) {
       clientErrors.dob = `You must be at least ${MINIMUM_AGE_YEARS} years old to use Waypoint.`;
+    }
+    if (!agreedToTerms) {
+      clientErrors.terms = "Please read and agree to the Terms & Conditions and Privacy Policy.";
     }
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
@@ -95,12 +111,38 @@ export default function CompleteProfile() {
             <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Waypoint.</span>
             {fieldErrors.dob && <div className="field-error">{fieldErrors.dob}</div>}
           </div>
+
+          <div className="field" style={{ marginTop: 8 }}>
+            <label className="checkbox-field terms-agree-label" title={bothViewed ? undefined : "Open both links first"}>
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                disabled={!bothViewed}
+                onChange={(e) => { setAgreedToTerms(e.target.checked); setFieldErrors((fe) => ({ ...fe, terms: undefined })); }}
+              />
+              <span>
+                I agree to the{" "}
+                <button type="button" className="link-button" onClick={() => openLegal("terms")}>Terms & Conditions</button>
+                {" "}and{" "}
+                <button type="button" className="link-button" onClick={() => openLegal("privacy")}>Privacy Policy</button>
+              </span>
+            </label>
+            {!bothViewed && (
+              <span className="muted" style={{ fontSize: "var(--text-xs)" }}>
+                Open both links above to enable this checkbox.
+              </span>
+            )}
+            {fieldErrors.terms && <div className="field-error">{fieldErrors.terms}</div>}
+          </div>
+
           {error && <div className="error-text">{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading}>
+          <button className="btn btn-primary" type="submit" disabled={loading || !agreedToTerms}>
             {loading ? "Saving…" : "Continue"}
           </button>
         </form>
       </div>
+
+      {openLegalDoc && <LegalModal doc={openLegalDoc} onClose={() => setOpenLegalDoc(null)} />}
     </div>
   );
 }

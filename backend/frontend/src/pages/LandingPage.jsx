@@ -506,6 +506,8 @@ export default function LandingPage() {
             <a href="#how-it-works">How it works</a>
             <a href="#safety">Safety</a>
             <a href="#faq">FAQ</a>
+            <Link to="/terms">Terms & Conditions</Link>
+            <Link to="/privacy">Privacy Policy</Link>
             <Link to="/login">Log in</Link>
             <Link to="/register">Sign up</Link>
           </div>
