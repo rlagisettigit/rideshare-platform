@@ -32,6 +32,12 @@ public class UserService {
         if (request.name() != null) user.setName(request.name());
         if (request.profilePhotoUrl() != null) user.setProfilePhotoUrl(request.profilePhotoUrl());
         if (request.gender() != null) user.setGender(request.gender());
+        if (request.mobile() != null) {
+            if (userRepository.existsByMobileAndPublicIdNot(request.mobile(), publicId)) {
+                throw ApiException.conflict("USER_002", "Mobile number is already registered to another account.");
+            }
+            user.setMobile(request.mobile());
+        }
         if (request.dob() != null) {
             AgeValidator.requireAtLeast18(request.dob());
             user.setDob(request.dob());

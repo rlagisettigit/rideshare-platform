@@ -15,7 +15,14 @@
       "Bash(node hero-zoom.js)",
       "Bash(node nav-check.js)",
       "WebSearch",
-      "WebFetch(domain:www.pexels.com)"
+      "WebFetch(domain:www.pexels.com)",
+      "Bash(npx vite *)",
+      "Bash(mvn -q -o spring-boot:run)",
+      "Bash(echo \"started with PID $!\")",
+      "Bash(powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalPort,State,OwningProcess\")",
+      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"mode\\\\\":\\\\\"GOOGLE\\\\\",\\\\\"idToken\\\\\":\\\\\"bogus.token.value\\\\\"}\" -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe *)",
+      "Bash(powershell -NoProfile -Command \"Get-Content -Path 'C:\\\\Users\\\\lagis\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Github-rideshare-platform-backend\\\\24b47568-890e-4586-9bc4-f96d53b35e0d\\\\scratchpad\\\\backend.log' -Wait -Tail 0\")"
     ]
   }
 }

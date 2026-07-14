@@ -13,6 +13,10 @@ that are NOT in git (must be recreated manually), and the startup sequence.
   - Node.js 18+ (20 LTS recommended)   frontend (Vite + React)
   - Docker Desktop (recent)        runs MySQL, Redis, Kafka, Zookeeper, Kafka UI
   - Git
+  
+  After installing Docker Desktop install:
+  Open PowerShell --> Run the Install 
+  wsl --install
 
   Everything else (MySQL, Redis, Kafka, Zookeeper, Kafka UI) runs as Docker
   containers via docker-compose.yml at the repo root - no local install needed.

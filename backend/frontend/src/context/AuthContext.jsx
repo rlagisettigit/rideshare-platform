@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import * as authApi from "../api/auth";
+import { getMyProfile } from "../api/users";
 
 const AuthContext = createContext(null);
 
@@ -39,6 +40,31 @@ export function AuthProvider({ children }) {
     return false;
   });
   const [roles, setRoles] = useState(() => (hasValidAccessToken() ? currentRoles() : []));
+  // null = not checked yet (e.g. right after login, before the profile fetch below resolves).
+  // Mobile is the signal: it's the one field required at normal signup but left null for
+  // Google/Apple accounts (see AuthService.provisionSocialUser), so it's null only for a social
+  // signup that hasn't completed its profile yet - never for a LOCAL account or the bootstrap admin.
+  const [profileComplete, setProfileComplete] = useState(null);
+
+  const refreshProfileStatus = useCallback(async () => {
+    try {
+      const res = await getMyProfile();
+      const complete = !!res.data.mobile;
+      setProfileComplete(complete);
+      return complete;
+    } catch {
+      // Leave as-is; a 401 here already triggers client.js's redirect-to-login flow.
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshProfileStatus();
+    } else {
+      setProfileComplete(null);
+    }
+  }, [isAuthenticated, refreshProfileStatus]);
 
   // Catches the case where a tab is left open across expiry without any API
   // call happening to trigger the axios 401 -> refresh/redirect flow. Also re-syncs `roles`
@@ -93,6 +119,7 @@ export function AuthProvider({ children }) {
       isPassenger: roles.includes("PASSENGER"),
       isDriver: roles.includes("DRIVER"),
       isAdmin: roles.includes("ADMIN"),
+      profileComplete, refreshProfileStatus,
       login, register, logout
     }}>
       {children}

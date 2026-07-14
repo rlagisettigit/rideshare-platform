@@ -1,5 +1,6 @@
 package com.rideshare.platform.user.dto;
 
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ public record UpdateProfileRequest(
         String profilePhotoUrl,
         String gender,
         LocalDate dob,
+        @Pattern(regexp = "^[+]?[0-9]{10,15}$", message = "Invalid mobile number") String mobile,
         String preferredLanguage,
         Double homeLat,
         Double homeLng,

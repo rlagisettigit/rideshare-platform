@@ -47,8 +47,8 @@ import java.util.Locale;
 public class RoutePreviewService {
 
     private static final Logger log = LoggerFactory.getLogger(RoutePreviewService.class);
-    private static final int MAX_PLACES_PER_ROUTE = 3;
-    private static final int PLACE_SAMPLE_POINTS = 2;
+    private static final int MAX_PLACES_PER_ROUTE = 5;
+    private static final int PLACE_SAMPLE_POINTS = 5;
 
     /** Despite the name, Mappls issues this as an OAuth client_id, not a standalone REST key. */
     @Value("${MAPPLS_API_KEY:}")
@@ -218,11 +218,12 @@ public class RoutePreviewService {
                 return Optional.empty();
             }
             MapplsRevGeocodeResult result = response.results().getFirst();
-            // Prefer the district - in AP/Telangana it's named after its headquarters town
-            // (Kurnool district -> Kurnool, Prakasam district -> Ongole), which reads as the
-            // recognizable "major city" a driver expects, unlike locality/village which name
-            // whatever hamlet is nearest to the exact sampled point on the road.
-            String place = firstNonBlank(result.district(), result.city(), result.locality(), result.subLocality(), result.village());
+            // Prefer city over district: district names (Kurnool district -> Kurnool) are
+            // recognizable but span 100+ km, so alternate routes that only diverge for a short
+            // stretch still sample into the same district and look identical to the driver.
+            // city is Mappls' nearest well-known town, which differentiates nearby-but-distinct
+            // roads while still being more recognizable than raw locality/village hamlet names.
+            String place = firstNonBlank(result.city(), result.district(), result.locality(), result.subLocality(), result.village());
             return Optional.ofNullable(place).map(this::stripDistrictSuffix);
         } catch (Exception e) {
             geocodeBackoffUntil = Instant.now().plus(GEOCODE_BACKOFF);

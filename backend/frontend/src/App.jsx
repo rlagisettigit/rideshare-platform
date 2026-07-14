@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import CompleteProfile from "./pages/CompleteProfile";
 import RideSearch from "./pages/RideSearch";
 import RidePublish from "./pages/RidePublish";
 import RecurringRides from "./pages/RecurringRides";
@@ -47,6 +48,14 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route
+            path="/complete-profile"
+            element={
+              <ProtectedRoute requireCompleteProfile={false}>
+                <CompleteProfile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/search" element={<Protected><RideSearch /></Protected>} />
           <Route path="/publish" element={<Protected roles={["DRIVER"]}><RidePublish /></Protected>} />
           <Route path="/recurring-rides" element={<Protected><RecurringRideActivity /></Protected>} />

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 const MINIMUM_AGE_YEARS = 18;
 
@@ -23,7 +24,7 @@ function isAtLeast18(dob) {
 }
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, login, refreshProfileStatus } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "", email: "", mobile: "", password: "", confirmPassword: "",
@@ -34,6 +35,20 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
+
+  const handleGoogleCredential = async (idToken) => {
+    setError(null);
+    setLoading(true);
+    try {
+      await login({ mode: "GOOGLE", idToken });
+      const complete = await refreshProfileStatus();
+      navigate(complete === false ? "/complete-profile" : "/search");
+    } catch (err) {
+      setError(err?.message ?? "Google sign-up failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,6 +90,9 @@ export default function Register() {
       <div className="auth-card">
         <h2>Create your account</h2>
         <p className="muted">Passwords need 8+ characters with a letter and a digit.</p>
+        <GoogleSignInButton onCredential={handleGoogleCredential} text="signup_with" />
+        <div className="auth-divider">or sign up with email</div>
+        {error && <div className="error-text">{error}</div>}
         <form onSubmit={handleSubmit} className="stack">
           <div className="field">
             <label htmlFor="name">Full name</label>
@@ -121,7 +139,6 @@ export default function Register() {
             <input type="checkbox" checked={form.asDriver} onChange={update("asDriver")} />
             I also want to drive and publish rides
           </label>
-          {error && <div className="error-text">{error}</div>}
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? "Creating account…" : "Create account"}
           </button>
