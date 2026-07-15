@@ -38,18 +38,18 @@ const NAV_ENTRIES = [
 
 function NavGroup({ label, items }) {
   const [open, setOpen] = useState(false);
+  // Touchscreens fire a synthetic mouseenter right before click, which would otherwise race with
+  // the click-to-toggle below (open via hover, then immediately close via the same tap's click).
+  // Only wire up hover-to-open for pointers that actually support hovering (mouse/trackpad).
+  const supportsHover = typeof window !== "undefined" && window.matchMedia?.("(hover: hover)").matches;
+  const hoverHandlers = supportsHover ? { onMouseEnter: () => setOpen(true), onMouseLeave: () => setOpen(false) } : {};
 
   return (
-    <div
-      className="nav-group"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div className="nav-group" {...hoverHandlers}>
       <button
         type="button"
         className={"nav-group-trigger" + (open ? " active" : "")}
         onClick={() => setOpen((v) => !v)}
-        onFocus={() => setOpen(true)}
         aria-expanded={open}
       >
         {label} <span className="nav-caret">▾</span>
@@ -74,6 +74,7 @@ function NavGroup({ label, items }) {
 
 export default function TopNav() {
   const { logout, roles: userRoles } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const visibleEntries = NAV_ENTRIES.filter((entry) => !entry.roles || entry.roles.some((r) => userRoles.includes(r)));
 
   return (
@@ -81,26 +82,42 @@ export default function TopNav() {
       <div className="nav-brand">
         Waypoint<span className="dot">•</span>
       </div>
-      <div className="nav-groups">
-        {visibleEntries.map((entry) =>
-          entry.standalone ? (
-            <NavLink
-              key={entry.to}
-              to={entry.to}
-              end={entry.end}
-              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-            >
-              {entry.label}
-            </NavLink>
-          ) : (
-            <NavGroup key={entry.label} label={entry.label} items={entry.items} />
-          )
-        )}
-      </div>
-      <div className="nav-footer">
-        <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} style={{ color: "#d6cfc0" }}>
-          Sign out
-        </a>
+      <button
+        type="button"
+        className="nav-mobile-toggle"
+        aria-label="Toggle menu"
+        aria-expanded={mobileOpen}
+        onClick={() => setMobileOpen((v) => !v)}
+      >
+        {mobileOpen ? "✕" : "☰"}
+      </button>
+      {/* Clicking any nav-dropdown-link/nav-link (an <a>) closes the mobile menu; clicking a
+          group's own trigger <button> must not, or its dropdown could never open on mobile. */}
+      <div
+        className={"nav-menu" + (mobileOpen ? " open" : "")}
+        onClick={(e) => { if (e.target.tagName === "A") setMobileOpen(false); }}
+      >
+        <div className="nav-groups">
+          {visibleEntries.map((entry) =>
+            entry.standalone ? (
+              <NavLink
+                key={entry.to}
+                to={entry.to}
+                end={entry.end}
+                className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+              >
+                {entry.label}
+              </NavLink>
+            ) : (
+              <NavGroup key={entry.label} label={entry.label} items={entry.items} />
+            )
+          )}
+        </div>
+        <div className="nav-footer">
+          <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} style={{ color: "#d6cfc0" }}>
+            Sign out
+          </a>
+        </div>
       </div>
     </nav>
   );

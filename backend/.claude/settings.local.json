@@ -31,7 +31,12 @@
       "Bash(curl -s -o auth-driver-nav.jpg \"https://images.unsplash.com/photo-1636935529049-2078e9ee3e6c?auto=format&fit=crop&w=1800&q=65\")",
       "Bash(curl -s -o carpool-friends.jpg \"https://images.unsplash.com/photo-1599441891448-5054d6402076?auto=format&fit=crop&w=1800&q=65\")",
       "Bash(sed -i 's/#2f3c7e/#1f6f5c/g; s/#f2a93b/#e0a52c/g; s/\"#14171f\"/\"#1c2420\"/g' RideStopMap.jsx)",
-      "Bash(sed -i 's/#c8cad6/#d6cfc0/g' TopNav.jsx)"
+      "Bash(sed -i 's/#c8cad6/#d6cfc0/g' TopNav.jsx)",
+      "Read(//c/Users/lagis/AppData/Local/Temp/claude/C--Github-rideshare-platform-backend/c1588e8d-a6c8-490d-94a9-bb824d9fd592/scratchpad/pw/**)",
+      "Bash(node shot4.js)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(taskkill //F //IM node.exe //FI \"WINDOWTITLE eq *vite*\")",
+      "Bash(netstat -ano)"
     ]
   }
 }

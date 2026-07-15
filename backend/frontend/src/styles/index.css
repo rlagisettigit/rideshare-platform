@@ -205,11 +205,68 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   white-space: nowrap;
 }
 
+.nav-mobile-toggle {
+  display: none;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-paper);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: var(--space-2);
+  cursor: pointer;
+}
+
+/* On desktop, .nav-menu is a transparent wrapper so nav-groups/nav-footer lay out as direct
+   flex children of .top-nav, same as before this wrapper existed. */
+.nav-menu { display: contents; }
+
+@media (max-width: 768px) {
+  .top-nav { flex-wrap: wrap; }
+  .nav-mobile-toggle { display: inline-flex; align-items: center; justify-content: center; }
+
+  .nav-menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+  }
+  .nav-menu.open { display: flex; }
+
+  .nav-groups { flex-direction: column; align-items: stretch; gap: 2px; }
+  .nav-link, .nav-group-trigger { width: 100%; justify-content: space-between; }
+
+  .nav-dropdown {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: rgba(0,0,0,0.15);
+    margin: 2px 0 2px var(--space-3);
+    min-width: 0;
+  }
+
+  /* .nav-dropdown-link's default ink/teal colors assume the light dropdown surface it has on
+     desktop; the mobile dropdown sits on the dark nav background instead, so it needs the same
+     light palette as .nav-link. */
+  .nav-dropdown-link { color: #d6cfc0; }
+  .nav-dropdown-link:hover { background: rgba(255,255,255,0.08); color: var(--color-paper); }
+  .nav-dropdown-link.active { background: rgba(224,165,44,0.18); color: var(--color-paper); }
+
+  .nav-footer { padding: var(--space-2) var(--space-3); }
+}
+
 .main-content {
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   padding: var(--space-6) var(--space-8);
+}
+
+@media (max-width: 640px) {
+  .main-content { padding: var(--space-4); }
+  .top-nav { padding: var(--space-3) var(--space-4); gap: var(--space-3); }
 }
 
 /* ---- Card ---- */
@@ -341,13 +398,14 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   border-color: var(--color-route);
 }
 
-.field-row { display: flex; gap: var(--space-4); }
-.field-row .field { flex: 1; }
+.field-row { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.field-row .field { flex: 1 1 200px; min-width: 0; }
 
 .checkbox-field { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
-.checkbox-field input { width: auto; }
+.checkbox-field input { width: auto; flex-shrink: 0; }
 
-.terms-agree-label { font-size: var(--text-xs); white-space: nowrap; }
+.terms-agree-label { align-items: flex-start; font-size: var(--text-xs); }
+.terms-agree-label input { margin-top: 2px; }
 .terms-agree-label .link-button { font-size: inherit; }
 
 /* ---- Buttons ---- */
@@ -558,6 +616,11 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 @media (max-width: 900px) {
   .auth-split-shell { grid-template-columns: 1fr; }
   .auth-split-visual { display: none; }
+}
+
+@media (max-width: 480px) {
+  .auth-split-form-panel { padding: var(--space-4); }
+  .auth-split-form-panel .auth-card { padding: var(--space-4); }
 }
 
 .auth-divider {
