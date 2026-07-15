@@ -302,7 +302,7 @@ export default function RidePublish() {
         </div>
 
         {error && <div className="error-text">{error}</div>}
-        {status === "published" && <div className="muted" style={{ color: "#3f7a5d" }}>Ride published and now searchable.</div>}
+        {status === "published" && <div className="muted" style={{ color: "#4f8a5a" }}>Ride published and now searchable.</div>}
 
         <button className="btn btn-primary" type="submit" disabled={status === "publishing"}>
           {status === "publishing" ? "Publishing…" : "Publish ride"}

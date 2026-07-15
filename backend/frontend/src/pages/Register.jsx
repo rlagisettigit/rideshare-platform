@@ -104,25 +104,25 @@ export default function Register() {
   };
 
   return (
-    <div className="signup-shell">
-      <div className="signup-visual">
-        <img src={heroRoad} alt="" className="signup-visual-bg" aria-hidden="true" />
-        <div className="signup-visual-overlay" />
+    <div className="auth-split-shell">
+      <div className="auth-split-visual">
+        <img src={heroRoad} alt="" className="auth-split-visual-bg" aria-hidden="true" />
+        <div className="auth-split-visual-overlay" />
 
-        <div className="signup-visual-content">
+        <div className="auth-split-visual-content">
           <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
             Waypoint<span className="dot">•</span>
           </Link>
         </div>
 
-        <div className="signup-visual-content">
-          <div className="signup-visual-quote">
+        <div className="auth-split-visual-content">
+          <div className="auth-split-visual-quote">
             <p>
               "I book the same Suryapet to Hyderabad seat every weekday now. It's cheaper than the
               bus and the driver's already someone I trust."
             </p>
             <div className="row">
-              <img src={testimonialAnanya} alt="" className="signup-visual-avatar" />
+              <img src={testimonialAnanya} alt="" className="auth-split-visual-avatar" />
               <div>
                 <strong>Ananya R.</strong>
                 <div style={{ opacity: 0.85, fontSize: "var(--text-sm)" }}>Daily commuter, Hyderabad</div>
@@ -130,24 +130,24 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="signup-visual-stats">
+          <div className="auth-split-visual-stats">
             <div>
-              <div className="signup-visual-stat-value">12,000+</div>
-              <div className="signup-visual-stat-label">Rides completed</div>
+              <div className="auth-split-visual-stat-value">12,000+</div>
+              <div className="auth-split-visual-stat-label">Rides completed</div>
             </div>
             <div>
-              <div className="signup-visual-stat-value">3,400+</div>
-              <div className="signup-visual-stat-label">Verified drivers</div>
+              <div className="auth-split-visual-stat-value">3,400+</div>
+              <div className="auth-split-visual-stat-label">Verified drivers</div>
             </div>
             <div>
-              <div className="signup-visual-stat-value">4.7 / 5</div>
-              <div className="signup-visual-stat-label">Average rating</div>
+              <div className="auth-split-visual-stat-value">4.7 / 5</div>
+              <div className="auth-split-visual-stat-label">Average rating</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="signup-form-panel">
+      <div className="auth-split-form-panel">
         <div className="auth-card">
           <h2>Create your account</h2>
 

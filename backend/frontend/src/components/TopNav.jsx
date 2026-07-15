@@ -98,7 +98,7 @@ export default function TopNav() {
         )}
       </div>
       <div className="nav-footer">
-        <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} style={{ color: "#c8cad6" }}>
+        <a href="#" onClick={(e) => { e.preventDefault(); logout(); }} style={{ color: "#d6cfc0" }}>
           Sign out
         </a>
       </div>

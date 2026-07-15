@@ -22,7 +22,16 @@
       "Bash(powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalPort,State,OwningProcess\")",
       "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/login -H \"Content-Type: application/json\" -d \"{\\\\\"mode\\\\\":\\\\\"GOOGLE\\\\\",\\\\\"idToken\\\\\":\\\\\"bogus.token.value\\\\\"}\" -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")",
       "Bash(/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe *)",
-      "Bash(powershell -NoProfile -Command \"Get-Content -Path 'C:\\\\Users\\\\lagis\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Github-rideshare-platform-backend\\\\24b47568-890e-4586-9bc4-f96d53b35e0d\\\\scratchpad\\\\backend.log' -Wait -Tail 0\")"
+      "Bash(powershell -NoProfile -Command \"Get-Content -Path 'C:\\\\Users\\\\lagis\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Github-rideshare-platform-backend\\\\24b47568-890e-4586-9bc4-f96d53b35e0d\\\\scratchpad\\\\backend.log' -Wait -Tail 0\")",
+      "Bash(curl -s -o nav-app-phone.jpg \"https://images.unsplash.com/photo-1759256243611-502772ac391b?auto=format&fit=crop&w=1200&q=70\")",
+      "Bash(curl -s -o phone-touch.jpg \"https://images.unsplash.com/photo-1509576931792-214960705f8a?auto=format&fit=crop&w=1200&q=70\")",
+      "Bash(curl -s -o auth-driver-nav.jpg \"https://images.unsplash.com/photo-1636935529049-2078e9ee3e6c?auto=format&fit=crop&w=1800&q=80\")",
+      "Bash(curl -s -o carpool-friends.jpg \"https://images.unsplash.com/photo-1599441891448-5054d6402076?auto=format&fit=crop&w=1800&q=80\")",
+      "Bash(curl -s -o nav-phone-mount.jpg \"https://images.unsplash.com/photo-1759256243611-502772ac391b?auto=format&fit=crop&w=1800&q=80\")",
+      "Bash(curl -s -o auth-driver-nav.jpg \"https://images.unsplash.com/photo-1636935529049-2078e9ee3e6c?auto=format&fit=crop&w=1800&q=65\")",
+      "Bash(curl -s -o carpool-friends.jpg \"https://images.unsplash.com/photo-1599441891448-5054d6402076?auto=format&fit=crop&w=1800&q=65\")",
+      "Bash(sed -i 's/#2f3c7e/#1f6f5c/g; s/#f2a93b/#e0a52c/g; s/\"#14171f\"/\"#1c2420\"/g' RideStopMap.jsx)",
+      "Bash(sed -i 's/#c8cad6/#d6cfc0/g' TopNav.jsx)"
     ]
   }
 }

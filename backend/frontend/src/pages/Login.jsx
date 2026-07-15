@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import authDriverNav from "../assets/images/auth-driver-nav.jpg";
 
 export default function Login() {
   const { login, refreshProfileStatus } = useAuth();
@@ -48,33 +49,55 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-shell">
-      <div className="auth-card">
-        <h2>Sign in to Waypoint</h2>
-        <p className="muted">Book a seat or publish a ride along your route.</p>
-        <GoogleSignInButton onCredential={handleGoogleCredential} text="signin_with" />
-        <div className="auth-divider">or sign in with email</div>
-        {error && <div className="error-text">{error}</div>}
-        <form onSubmit={handleSubmit} className="stack">
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+    <div className="auth-split-shell">
+      <div className="auth-split-visual">
+        <img src={authDriverNav} alt="" className="auth-split-visual-bg" aria-hidden="true" />
+        <div className="auth-split-visual-overlay" />
+
+        <div className="auth-split-visual-content">
+          <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
+            Waypoint<span className="dot">•</span>
+          </Link>
+        </div>
+
+        <div className="auth-split-visual-content">
+          <div className="auth-split-visual-quote">
+            <p style={{ marginBottom: "var(--space-2)" }}>Welcome back to the road.</p>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", opacity: 0.9 }}>
+              Sign in to track your ride live, message your driver, and manage upcoming bookings.
+            </div>
           </div>
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
-        <p className="muted" style={{ marginTop: 16 }}>
-          New here? <Link to="/register">Create an account</Link>
-        </p>
-        <p className="muted" style={{ marginTop: 4, fontSize: "var(--text-xs)" }}>
-          By continuing, you agree to our <Link to="/terms">Terms & Conditions</Link> and{" "}
-          <Link to="/privacy">Privacy Policy</Link>.
-        </p>
+        </div>
+      </div>
+
+      <div className="auth-split-form-panel">
+        <div className="auth-card">
+          <h2>Sign in to Waypoint</h2>
+          <p className="muted">Book a seat or publish a ride along your route.</p>
+          <GoogleSignInButton onCredential={handleGoogleCredential} text="signin_with" />
+          <div className="auth-divider">or sign in with email</div>
+          {error && <div className="error-text">{error}</div>}
+          <form onSubmit={handleSubmit} className="stack">
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </div>
+            <button className="btn btn-primary" type="submit" disabled={loading}>
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+          <p className="muted" style={{ marginTop: 16 }}>
+            New here? <Link to="/register">Create an account</Link>
+          </p>
+          <p className="muted" style={{ marginTop: 4, fontSize: "var(--text-xs)" }}>
+            By continuing, you agree to our <Link to="/terms">Terms & Conditions</Link> and{" "}
+            <Link to="/privacy">Privacy Policy</Link>.
+          </p>
+        </div>
       </div>
     </div>
   );

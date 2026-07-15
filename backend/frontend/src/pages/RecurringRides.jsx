@@ -361,7 +361,7 @@ export default function RecurringRides() {
         </div>
 
         {error && <div className="error-text">{error}</div>}
-        {status === "published" && <div className="muted" style={{ color: "#3f7a5d" }}>Recurring ride created - occurrences are now searchable.</div>}
+        {status === "published" && <div className="muted" style={{ color: "#4f8a5a" }}>Recurring ride created - occurrences are now searchable.</div>}
 
         <button className="btn btn-primary" type="submit" disabled={status === "publishing"}>
           {status === "publishing" ? "Creating…" : "Create recurring ride"}

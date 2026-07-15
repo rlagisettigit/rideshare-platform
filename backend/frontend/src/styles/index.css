@@ -1,35 +1,38 @@
 /* ==========================================================================
-   Design tokens — "Waypoint" visual identity
-   Subject: a routing platform. The signature motif is the route line — a
-   dashed path connecting two points — echoed in dividers, cards, and the
-   nav rail's active-state indicator.
+   Design tokens — "Waypoint" visual identity, "Sunset Highway" theme
+   A warmer, editorial take on the same routing-platform brand: terracotta
+   dusk + deep pine teal + sun-bleached ivory, in place of the cooler
+   asphalt/indigo/amber theme. The route-line motif (dashed path connecting
+   two points, echoed in dividers/cards/nav) is unchanged - only the palette
+   and type pairing shift, so component code needs no changes, just these
+   custom property values.
    ========================================================================== */
 
 :root {
-  /* Color: asphalt + route-indigo + signal-amber, named for what they are */
-  --color-ink: #14171f;           /* asphalt - primary text, dark surfaces */
-  --color-paper: #eef3fb;         /* page background, cool light blue-white */
-  --color-surface: #ffffff;       /* card surfaces */
-  --color-route: #2f3c7e;         /* route indigo - primary actions, links */
-  --color-route-dark: #232d61;
-  --color-signal: #f2a93b;        /* signal amber - accent, highlights */
-  --color-moss: #3f7a5d;          /* verified / success / active */
-  --color-rust: #b5443a;          /* cancelled / error */
-  --color-line: #e4e0d8;          /* hairline borders on paper */
-  --color-muted: #6b6f7b;         /* secondary text */
+  /* Color: terracotta dusk + pine teal + sun-bleached ivory */
+  --color-ink: #1c2420;           /* deep pine charcoal - primary text, dark surfaces */
+  --color-paper: #f6ede0;         /* page background, warm sun-bleached ivory */
+  --color-surface: #fffbf4;       /* card surfaces, warm off-white */
+  --color-route: #1f6f5c;         /* pine teal - primary actions, links */
+  --color-route-dark: #164f42;
+  --color-signal: #e0a52c;        /* mustard gold - accent, highlights */
+  --color-moss: #4f8a5a;          /* verified / success / active */
+  --color-rust: #c1502f;          /* cancelled / error - terracotta red */
+  --color-line: #e6d9c3;          /* hairline borders on paper */
+  --color-muted: #79705f;         /* secondary text, warm grey */
 
-  /* White/blue/yellow/gold accent palette - used for decorative richness on the
+  /* Coral/gold/deep-teal accent palette - used for decorative richness on the
      public landing page, layered on top of the core brand tokens above rather
      than replacing them. */
-  --color-yellow: #ffc72c;
-  --color-yellow-light: #fff8e1;
-  --color-gold: #d4af37;
-  --color-navy: #16215c;
-  --color-navy-dark: #0d1440;
-  --color-azure: #1d6fd8;
+  --color-yellow: #f4c04e;
+  --color-yellow-light: #fdf1da;
+  --color-gold: #c9962f;
+  --color-navy: #163029;
+  --color-navy-dark: #0d1e19;
+  --color-azure: #c1502f;
 
-  /* Type: Space Grotesk (display, technical/geometric) + Inter (body) + JetBrains Mono (data) */
-  --font-display: "Space Grotesk", "Inter", sans-serif;
+  /* Type: Fraunces (display, warm editorial serif) + Inter (body) + JetBrains Mono (data) */
+  --font-display: "Fraunces", Georgia, serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
@@ -49,9 +52,9 @@
   --space-6: 32px;
   --space-8: 48px;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
 }
 
 * { box-sizing: border-box; }
@@ -104,13 +107,15 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 }
 
 .top-nav {
-  background: var(--color-ink);
+  background: var(--color-route-dark);
   color: var(--color-paper);
   display: flex;
   align-items: center;
   gap: var(--space-6);
   padding: var(--space-3) var(--space-6);
   flex-wrap: wrap;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, var(--color-yellow), var(--color-gold), var(--color-azure)) 1;
 }
 
 .nav-brand {
@@ -141,7 +146,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   gap: 4px;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  color: #c8cad6;
+  color: #d6cfc0;
   font-size: var(--text-sm);
   font-weight: 500;
   text-decoration: none;
@@ -156,7 +161,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 
 .nav-link.active,
 .nav-group-trigger.active {
-  background: rgba(242,169,59,0.15);
+  background: rgba(224,165,44,0.18);
   color: var(--color-paper);
 }
 
@@ -192,11 +197,11 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 
 .nav-dropdown-link:hover { background: var(--color-paper); text-decoration: none; }
 
-.nav-dropdown-link.active { background: rgba(47,60,126,0.08); color: var(--color-route); }
+.nav-dropdown-link.active { background: rgba(31,111,92,0.10); color: var(--color-route); }
 
 .nav-footer {
   font-size: var(--text-xs);
-  color: #c8cad6;
+  color: #d6cfc0;
   white-space: nowrap;
 }
 
@@ -236,7 +241,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 .page-banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(22,33,92,0.90) 0%, rgba(212,175,55,0.55) 100%);
+  background: linear-gradient(115deg, rgba(22,48,41,0.88) 0%, rgba(201,150,47,0.55) 100%);
 }
 
 .page-banner-content {
@@ -264,7 +269,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 .page-banner-content p { color: rgba(255,255,255,0.85); margin-bottom: 0; max-width: 520px; }
 
 .page-banner-actions .btn-primary { background: var(--color-gold); color: var(--color-navy-dark); }
-.page-banner-actions .btn-primary:hover { background: #b8931f; }
+.page-banner-actions .btn-primary:hover { background: #a97b26; }
 
 /* ---- Route line motif: origin --- (dashed) --- destination ---- */
 .route-line {
@@ -380,9 +385,9 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   letter-spacing: 0.03em;
 }
 
-.badge-active { background: rgba(63,122,93,0.12); color: var(--color-moss); }
-.badge-pending { background: rgba(242,169,59,0.15); color: #a06c1c; }
-.badge-cancelled { background: rgba(181,68,58,0.12); color: var(--color-rust); }
+.badge-active { background: rgba(79,138,90,0.14); color: var(--color-moss); }
+.badge-pending { background: rgba(224,165,44,0.18); color: #8a6318; }
+.badge-cancelled { background: rgba(193,80,47,0.12); color: var(--color-rust); }
 
 .vehicle-thumb {
   width: 48px;
@@ -404,8 +409,8 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   align-items: flex-start;
   gap: var(--space-2);
   color: var(--color-rust);
-  background: rgba(181, 68, 58, 0.08);
-  border: 1px solid rgba(181, 68, 58, 0.3);
+  background: rgba(193, 80, 47, 0.08);
+  border: 1px solid rgba(193, 80, 47, 0.3);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-sm);
@@ -457,14 +462,14 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 }
 
 /* ---- Signup (split-screen with a real photo + social proof) ---- */
-.signup-shell {
+.auth-split-shell {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1.15fr 1fr;
   background: var(--color-paper);
 }
 
-.signup-visual {
+.auth-split-visual {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -473,7 +478,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   overflow: hidden;
 }
 
-.signup-visual-bg {
+.auth-split-visual-bg {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -481,19 +486,19 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   object-fit: cover;
 }
 
-.signup-visual-overlay {
+.auth-split-visual-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(20, 23, 31, 0.65) 0%, rgba(20, 23, 31, 0.15) 45%, rgba(20, 23, 31, 0.8) 100%);
 }
 
-.signup-visual-content {
+.auth-split-visual-content {
   position: relative;
   z-index: 1;
   color: var(--color-paper);
 }
 
-.signup-visual-quote {
+.auth-split-visual-quote {
   background: rgba(20, 23, 31, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -503,14 +508,14 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   margin-bottom: var(--space-5);
 }
 
-.signup-visual-quote p {
+.auth-split-visual-quote p {
   font-family: var(--font-display);
   font-size: var(--text-lg);
   line-height: 1.4;
   margin: 0 0 var(--space-4);
 }
 
-.signup-visual-avatar {
+.auth-split-visual-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -518,23 +523,23 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   flex-shrink: 0;
 }
 
-.signup-visual-stats {
+.auth-split-visual-stats {
   display: flex;
   gap: var(--space-6);
 }
 
-.signup-visual-stat-value {
+.auth-split-visual-stat-value {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
   font-weight: 700;
 }
 
-.signup-visual-stat-label {
+.auth-split-visual-stat-label {
   font-size: var(--text-sm);
   opacity: 0.85;
 }
 
-.signup-form-panel {
+.auth-split-form-panel {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -542,17 +547,17 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   overflow-y: auto;
 }
 
-.signup-form-panel .auth-card { width: 100%; max-width: 460px; }
+.auth-split-form-panel .auth-card { width: 100%; max-width: 460px; }
 
 /* .field already carries its own margin-bottom; the form's .stack gap was stacking on top of
    that (16px + 16px = 32px between fields) instead of collapsing, making the form read as overly
    stretched. Tightening both here brings it back to a single ~16px rhythm. */
-.signup-form-panel form.stack { gap: var(--space-2); }
-.signup-form-panel .field { margin-bottom: var(--space-2); }
+.auth-split-form-panel form.stack { gap: var(--space-2); }
+.auth-split-form-panel .field { margin-bottom: var(--space-2); }
 
 @media (max-width: 900px) {
-  .signup-shell { grid-template-columns: 1fr; }
-  .signup-visual { display: none; }
+  .auth-split-shell { grid-template-columns: 1fr; }
+  .auth-split-visual { display: none; }
 }
 
 .auth-divider {
@@ -612,7 +617,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 }
 
 .lp-header-links a {
-  color: #c8cad6;
+  color: #d6cfc0;
   font-size: var(--text-sm);
   font-weight: 500;
 }
@@ -640,7 +645,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 .lp-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(13,20,64,0.88) 0%, rgba(13,20,64,0.62) 45%, rgba(13,20,64,0.3) 100%);
+  background: linear-gradient(115deg, rgba(13,30,25,0.88) 0%, rgba(13,30,25,0.62) 45%, rgba(13,30,25,0.3) 100%);
 }
 
 .lp-hero-inner {
@@ -888,7 +893,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 
 /* Environmental impact */
 .lp-env {
-  background: rgba(63,122,93,0.06);
+  background: rgba(79,138,90,0.08);
   border-radius: var(--radius-lg);
 }
 
@@ -927,7 +932,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, rgba(22,33,92,0.92) 0%, rgba(212,175,55,0.55) 100%);
+  background: linear-gradient(115deg, rgba(22,48,41,0.90) 0%, rgba(201,150,47,0.55) 100%);
   pointer-events: none;
 }
 
@@ -935,7 +940,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 .lp-driver-cta-copy h2 { color: white; }
 .lp-driver-cta-copy p { color: rgba(255,255,255,0.88); }
 .lp-driver-cta-copy .btn-primary { background: var(--color-gold); color: var(--color-navy-dark); }
-.lp-driver-cta-copy .btn-primary:hover { background: #b8931f; }
+.lp-driver-cta-copy .btn-primary:hover { background: #a97b26; }
 
 /* Testimonials */
 .lp-testimonial { position: relative; display: flex; flex-direction: column; gap: var(--space-4); justify-content: space-between; }
@@ -972,7 +977,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   font-weight: 700;
   color: var(--color-gold);
 }
-.lp-stat-label { color: #c8cad6; font-size: var(--text-sm); margin-top: var(--space-1); }
+.lp-stat-label { color: #d6cfc0; font-size: var(--text-sm); margin-top: var(--space-1); }
 
 /* Cities covered */
 .lp-city-tags {
@@ -1045,7 +1050,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 .lp-download h2 { color: white; }
 .lp-download p { max-width: 480px; margin-left: auto; margin-right: auto; color: rgba(255,255,255,0.85); }
 .lp-download .btn-primary { background: var(--color-gold); color: var(--color-navy-dark); }
-.lp-download .btn-primary:hover { background: #b8931f; }
+.lp-download .btn-primary:hover { background: #a97b26; }
 .lp-download-image {
   width: 140px;
   height: 210px;
@@ -1062,7 +1067,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
 /* Footer */
 .lp-footer {
   background: linear-gradient(180deg, var(--color-ink), var(--color-navy-dark));
-  color: #c8cad6;
+  color: #d6cfc0;
   margin-top: var(--space-6);
   border-top: 3px solid transparent;
   border-image: linear-gradient(90deg, var(--color-azure), var(--color-gold), var(--color-yellow)) 1;
@@ -1085,7 +1090,7 @@ button, input, select, textarea { font-family: inherit; font-size: var(--text-ba
   flex-wrap: wrap;
 }
 
-.lp-footer-links a { color: #c8cad6; font-size: var(--text-sm); }
+.lp-footer-links a { color: #d6cfc0; font-size: var(--text-sm); }
 .lp-footer-links a:hover { color: var(--color-paper); }
 .lp-footer-copyright { white-space: nowrap; }
 

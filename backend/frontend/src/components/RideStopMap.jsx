@@ -136,13 +136,13 @@ export default function RideStopMap({ ridePublicId, showNavigation = false, pass
         const boundsPoints = [[startLat, startLng]];
 
         pickups.forEach((s) => {
-          L.marker([s.lat, s.lng], { icon: stopIcon(`P${s.order}`, "#2f3c7e") })
+          L.marker([s.lat, s.lng], { icon: stopIcon(`P${s.order}`, "#1f6f5c") })
             .addTo(mapRef.current)
             .bindPopup(`Pickup ${s.order}: ${s.passengerName}<br/>${s.address ?? ""}`);
           boundsPoints.push([s.lat, s.lng]);
         });
         dropoffs.forEach((s) => {
-          L.marker([s.lat, s.lng], { icon: stopIcon(`D${s.order}`, "#f2a93b") })
+          L.marker([s.lat, s.lng], { icon: stopIcon(`D${s.order}`, "#e0a52c") })
             .addTo(mapRef.current)
             .bindPopup(`Drop-off ${s.order}: ${s.passengerName}<br/>${s.address ?? ""}`);
           boundsPoints.push([s.lat, s.lng]);
@@ -153,7 +153,7 @@ export default function RideStopMap({ ridePublicId, showNavigation = false, pass
         // as its own stop (unless it's essentially the same point already).
         const destIsDistinct = !lastDrop || L.latLng(lastDrop.lat, lastDrop.lng).distanceTo([destLat, destLng]) > 150;
         if (destIsDistinct) {
-          L.marker([destLat, destLng], { icon: stopIcon("🏁", "#14171f") })
+          L.marker([destLat, destLng], { icon: stopIcon("🏁", "#1c2420") })
             .addTo(mapRef.current)
             .bindPopup(`Final destination<br/>${destAddress ?? ""}`);
           boundsPoints.push([destLat, destLng]);
@@ -170,7 +170,7 @@ export default function RideStopMap({ ridePublicId, showNavigation = false, pass
         // fallback for when Directions itself is unavailable (no key, quota, no route found).
         const roadPath = await fetchRoadPath(orderedLatLngs).catch(() => null);
         if (roadPath?.path?.length > 1) {
-          const line = L.polyline(roadPath.path, { color: "#2f3c7e", weight: 4, opacity: 0.85 }).addTo(mapRef.current);
+          const line = L.polyline(roadPath.path, { color: "#1f6f5c", weight: 4, opacity: 0.85 }).addTo(mapRef.current);
           mapRef.current.fitBounds(line.getBounds(), { padding: [24, 24] });
           // legDistancesKm[i] is the leg *ending* at orderedLatLngs[i+1] - reattach onto the
           // matching pickup/drop/destination so the numbers under the map match what's drawn.
@@ -180,7 +180,7 @@ export default function RideStopMap({ ridePublicId, showNavigation = false, pass
             dropoffs: dropoffs.map((s, i) => ({ ...s, legDistanceKm: roadPath.legDistancesKm[pickups.length + i] ?? s.legDistanceKm }))
           });
         } else if (orderedLatLngs.length > 1) {
-          const line = L.polyline(orderedLatLngs, { color: "#2f3c7e", weight: 4, opacity: 0.85, dashArray: "1 8" }).addTo(mapRef.current);
+          const line = L.polyline(orderedLatLngs, { color: "#1f6f5c", weight: 4, opacity: 0.85, dashArray: "1 8" }).addTo(mapRef.current);
           mapRef.current.fitBounds(line.getBounds(), { padding: [24, 24] });
           setStops(res.data);
         } else {

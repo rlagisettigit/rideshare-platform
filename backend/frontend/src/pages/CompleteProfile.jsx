@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { updateMyProfile } from "../api/users";
 import LegalModal from "../components/legal/LegalModal";
+import carpoolFriends from "../assets/images/carpool-friends.jpg";
 
 const MINIMUM_AGE_YEARS = 18;
 
@@ -83,63 +84,85 @@ export default function CompleteProfile() {
   };
 
   return (
-    <div className="auth-shell">
-      <div className="auth-card">
-        <h2>Just a few more details</h2>
-        <p className="muted">
-          Your Google account didn't include these - we need them before you can book or publish rides.
-        </p>
-        <form onSubmit={handleSubmit} className="stack">
-          <div className="field">
-            <label htmlFor="mobile">Mobile</label>
-            <input id="mobile" value={form.mobile} onChange={update("mobile")} placeholder="+15551234567" required />
-            {fieldErrors.mobile && <div className="field-error">{fieldErrors.mobile}</div>}
-          </div>
-          <div className="field">
-            <label htmlFor="gender">Gender</label>
-            <select id="gender" value={form.gender} onChange={update("gender")} required>
-              <option value="" disabled>Select one</option>
-              <option value="FEMALE">Female</option>
-              <option value="MALE">Male</option>
-              <option value="OTHER">Other</option>
-            </select>
-            {fieldErrors.gender && <div className="field-error">{fieldErrors.gender}</div>}
-          </div>
-          <div className="field">
-            <label htmlFor="dob">Date of birth</label>
-            <input id="dob" type="date" max={maxDobForMinimumAge()} value={form.dob} onChange={update("dob")} required />
-            <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Waypoint.</span>
-            {fieldErrors.dob && <div className="field-error">{fieldErrors.dob}</div>}
-          </div>
+    <div className="auth-split-shell">
+      <div className="auth-split-visual">
+        <img src={carpoolFriends} alt="" className="auth-split-visual-bg" aria-hidden="true" />
+        <div className="auth-split-visual-overlay" />
 
-          <div className="field" style={{ marginTop: 8 }}>
-            <label className="checkbox-field terms-agree-label" title={bothViewed ? undefined : "Open both links first"}>
-              <input
-                type="checkbox"
-                checked={agreedToTerms}
-                disabled={!bothViewed}
-                onChange={(e) => { setAgreedToTerms(e.target.checked); setFieldErrors((fe) => ({ ...fe, terms: undefined })); }}
-              />
-              <span>
-                I agree to the{" "}
-                <button type="button" className="link-button" onClick={() => openLegal("terms")}>Terms & Conditions</button>
-                {" "}and{" "}
-                <button type="button" className="link-button" onClick={() => openLegal("privacy")}>Privacy Policy</button>
-              </span>
-            </label>
-            {!bothViewed && (
-              <span className="muted" style={{ fontSize: "var(--text-xs)" }}>
-                Open both links above to enable this checkbox.
-              </span>
-            )}
-            {fieldErrors.terms && <div className="field-error">{fieldErrors.terms}</div>}
-          </div>
+        <div className="auth-split-visual-content">
+          <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
+            Waypoint<span className="dot">•</span>
+          </Link>
+        </div>
 
-          {error && <div className="error-text">{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading || !agreedToTerms}>
-            {loading ? "Saving…" : "Continue"}
-          </button>
-        </form>
+        <div className="auth-split-visual-content">
+          <div className="auth-split-visual-quote">
+            <p style={{ marginBottom: "var(--space-2)" }}>You're almost in.</p>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-base)", opacity: 0.9 }}>
+              A few more details and you're ready to book a seat or publish your first ride.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="auth-split-form-panel">
+        <div className="auth-card">
+          <h2>Just a few more details</h2>
+          <p className="muted">
+            Your Google account didn't include these - we need them before you can book or publish rides.
+          </p>
+          <form onSubmit={handleSubmit} className="stack">
+            <div className="field">
+              <label htmlFor="mobile">Mobile</label>
+              <input id="mobile" value={form.mobile} onChange={update("mobile")} placeholder="+15551234567" required />
+              {fieldErrors.mobile && <div className="field-error">{fieldErrors.mobile}</div>}
+            </div>
+            <div className="field">
+              <label htmlFor="gender">Gender</label>
+              <select id="gender" value={form.gender} onChange={update("gender")} required>
+                <option value="" disabled>Select one</option>
+                <option value="FEMALE">Female</option>
+                <option value="MALE">Male</option>
+                <option value="OTHER">Other</option>
+              </select>
+              {fieldErrors.gender && <div className="field-error">{fieldErrors.gender}</div>}
+            </div>
+            <div className="field">
+              <label htmlFor="dob">Date of birth</label>
+              <input id="dob" type="date" max={maxDobForMinimumAge()} value={form.dob} onChange={update("dob")} required />
+              <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Waypoint.</span>
+              {fieldErrors.dob && <div className="field-error">{fieldErrors.dob}</div>}
+            </div>
+
+            <div className="field" style={{ marginTop: 8 }}>
+              <label className="checkbox-field terms-agree-label" title={bothViewed ? undefined : "Open both links first"}>
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  disabled={!bothViewed}
+                  onChange={(e) => { setAgreedToTerms(e.target.checked); setFieldErrors((fe) => ({ ...fe, terms: undefined })); }}
+                />
+                <span>
+                  I agree to the{" "}
+                  <button type="button" className="link-button" onClick={() => openLegal("terms")}>Terms & Conditions</button>
+                  {" "}and{" "}
+                  <button type="button" className="link-button" onClick={() => openLegal("privacy")}>Privacy Policy</button>
+                </span>
+              </label>
+              {!bothViewed && (
+                <span className="muted" style={{ fontSize: "var(--text-xs)" }}>
+                  Open both links above to enable this checkbox.
+                </span>
+              )}
+              {fieldErrors.terms && <div className="field-error">{fieldErrors.terms}</div>}
+            </div>
+
+            {error && <div className="error-text">{error}</div>}
+            <button className="btn btn-primary" type="submit" disabled={loading || !agreedToTerms}>
+              {loading ? "Saving…" : "Continue"}
+            </button>
+          </form>
+        </div>
       </div>
 
       {openLegalDoc && <LegalModal doc={openLegalDoc} onClose={() => setOpenLegalDoc(null)} />}
