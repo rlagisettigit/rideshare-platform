@@ -3,7 +3,7 @@ export default function TermsContent() {
     <>
       <h2>1. Acceptance of these terms</h2>
       <p>
-        By creating a Waypoint account or using the Waypoint platform, you agree to these Terms &
+        By creating an Aura Ride account or using the Aura Ride platform, you agree to these Terms &
         Conditions and to our <a href="/privacy">Privacy Policy</a>. If you don't agree, please
         don't use the platform.
       </p>
@@ -25,11 +25,11 @@ export default function TermsContent() {
 
       <h2>4. The service</h2>
       <p>
-        Waypoint is a marketplace that connects drivers already making a trip with passengers
+        Aura Ride is a marketplace that connects drivers already making a trip with passengers
         looking to travel the same route. We match passengers to rides whose path passes near
         their pickup and drop points, not just exact city-to-city trips, and support one-off and
-        recurring (repeating weekday) rides. Waypoint is not a transportation carrier - the actual
-        ride is provided by the driver, who is an independent individual, not a Waypoint employee
+        recurring (repeating weekday) rides. Aura Ride is not a transportation carrier - the actual
+        ride is provided by the driver, who is an independent individual, not an Aura Ride employee
         or agent.
       </p>
 
@@ -81,16 +81,16 @@ export default function TermsContent() {
 
       <h2>11. Third-party services</h2>
       <p>
-        Waypoint relies on third-party providers to operate: mapping, routing, and place lookups
+        Aura Ride relies on third-party providers to operate: mapping, routing, and place lookups
         (Mappls, Google Maps), sign-in (Google, Apple), and transactional email delivery. Your use
         of features backed by these providers is also subject to their own terms.
       </p>
 
       <h2>12. Limitation of liability</h2>
       <p>
-        Waypoint facilitates introductions between drivers and passengers but does not control,
+        Aura Ride facilitates introductions between drivers and passengers but does not control,
         and isn't liable for, the conduct of drivers or passengers, the condition of vehicles, or
-        events occurring during a ride. To the fullest extent permitted by law, Waypoint's
+        events occurring during a ride. To the fullest extent permitted by law, Aura Ride's
         liability for any claim arising from your use of the platform is limited to the fees you
         paid for the ride giving rise to the claim.
       </p>
@@ -104,7 +104,7 @@ export default function TermsContent() {
 
       <h2>14. Changes to these terms</h2>
       <p>
-        We may update these terms as the platform evolves. Continued use of Waypoint after an
+        We may update these terms as the platform evolves. Continued use of Aura Ride after an
         update means you accept the revised terms.
       </p>
 

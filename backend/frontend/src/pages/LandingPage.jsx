@@ -205,7 +205,7 @@ export default function LandingPage() {
       <header className="lp-header">
         <div className="lp-header-inner">
           <div className="nav-brand">
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </div>
           <nav className="lp-header-links">
             <a href="#how-it-works">How it works</a>
@@ -227,7 +227,7 @@ export default function LandingPage() {
           <div className="lp-hero-copy">
             <h1>Share the ride. Split the cost.</h1>
             <p>
-              Waypoint matches passengers and drivers along shared routes across India -
+              Aura Ride matches passengers and drivers along shared routes across India -
               book a seat, publish a ride, or set up a recurring commute in minutes.
             </p>
           </div>
@@ -489,18 +489,18 @@ export default function LandingPage() {
       {/* Download App */}
       <section className="lp-section lp-download" id="download-app">
         <div className="lp-download-copy">
-          <h2>Take Waypoint with you</h2>
+          <h2>Take Aura Ride with you</h2>
           <p>Our mobile app is on the way. Sign up now and we'll let you know the moment it lands.</p>
           <Link to="/register" className="btn btn-primary">Get notified</Link>
         </div>
-        <img src={appMockup} alt="Waypoint app preview on a phone" className="lp-download-image" />
+        <img src={appMockup} alt="Aura Ride app preview on a phone" className="lp-download-image" />
       </section>
 
       {/* Footer */}
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="nav-brand">
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </div>
           <div className="lp-footer-links">
             <a href="#how-it-works">How it works</a>
@@ -511,7 +511,7 @@ export default function LandingPage() {
             <Link to="/login">Log in</Link>
             <Link to="/register">Sign up</Link>
           </div>
-          <span className="muted lp-footer-copyright">© {new Date().getFullYear()} Waypoint. All rights reserved.</span>
+          <span className="muted lp-footer-copyright">© {new Date().getFullYear()} Aura Ride. All rights reserved.</span>
         </div>
       </footer>
     </div>

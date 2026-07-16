@@ -34,7 +34,7 @@ public class ResendEmailClient {
     public ResendEmailClient(
             @Value("${EMAIL_NOTIFICATIONS_ENABLED:true}") boolean enabled,
             @Value("${RESEND_API_KEY:}") String apiKey,
-            @Value("${RESEND_FROM_EMAIL:Waypoint <onboarding@resend.dev>}") String fromAddress) {
+            @Value("${RESEND_FROM_EMAIL:Aura Ride <onboarding@resend.dev>}") String fromAddress) {
         this.enabled = enabled;
         this.apiKey = apiKey;
         this.fromAddress = fromAddress;

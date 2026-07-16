@@ -75,7 +75,7 @@ export default function Home() {
       <PageHeader
         image={bannerRoad}
         kicker={timeOfDayGreeting()}
-        title="Welcome to Waypoint"
+        title="Welcome to Aura Ride"
         description="Find a ride, publish one of your own, or keep tabs on the trips you've already got lined up - everything's one click away below."
       />
 

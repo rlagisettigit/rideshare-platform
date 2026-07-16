@@ -111,7 +111,7 @@ export default function Register() {
 
         <div className="auth-split-visual-content">
           <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </Link>
         </div>
 
@@ -184,7 +184,7 @@ export default function Register() {
             <div className="field">
               <label htmlFor="dob">Date of birth</label>
               <input id="dob" type="date" max={maxDobForMinimumAge()} value={form.dob} onChange={update("dob")} required />
-              <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Waypoint.</span>
+              <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Aura Ride.</span>
               {fieldErrors.dob && <div className="field-error">{fieldErrors.dob}</div>}
             </div>
             <div className="field">

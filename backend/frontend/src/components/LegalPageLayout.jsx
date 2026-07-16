@@ -6,7 +6,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }) {
       <header className="lp-header">
         <div className="lp-header-inner">
           <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </Link>
           <nav className="lp-header-links" style={{ justifyContent: "flex-end" }}>
             <Link to="/terms">Terms & Conditions</Link>
@@ -28,7 +28,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }) {
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="nav-brand">
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </div>
           <div className="lp-footer-links">
             <Link to="/terms">Terms & Conditions</Link>
@@ -36,7 +36,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }) {
             <Link to="/login">Log in</Link>
             <Link to="/register">Sign up</Link>
           </div>
-          <span className="muted lp-footer-copyright">© {new Date().getFullYear()} Waypoint. All rights reserved.</span>
+          <span className="muted lp-footer-copyright">© {new Date().getFullYear()} Aura Ride. All rights reserved.</span>
         </div>
       </footer>
     </div>

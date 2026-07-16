@@ -80,7 +80,7 @@ export default function TopNav() {
   return (
     <nav className="top-nav">
       <div className="nav-brand">
-        Waypoint<span className="dot">•</span>
+        Aura Ride<span className="dot">•</span>
       </div>
       <button
         type="button"

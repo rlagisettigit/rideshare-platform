@@ -63,7 +63,7 @@ export default function PrivacyContent() {
 
       <h2>8. Children's privacy</h2>
       <p>
-        Waypoint is not intended for anyone under 18. We verify date of birth at registration and
+        Aura Ride is not intended for anyone under 18. We verify date of birth at registration and
         don't knowingly collect data from minors.
       </p>
 

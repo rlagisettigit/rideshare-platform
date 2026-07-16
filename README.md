@@ -1,4 +1,4 @@
-# Waypoint — Ride-Sharing Platform
+# Aura Ride — Ride-Sharing Platform
 
 A scalable ride-sharing platform skeleton: drivers publish rides, passengers discover and
 book seats along any valid pickup/drop-off segment of a route. Built against the SRS covering

@@ -20,7 +20,7 @@ import java.util.Map;
  * is structural, reusable presentation: the route/map card, buttons, badges, and the mapping
  * from domain data (Ride/Booking fields) to the {{token}} values those templates expect.
  *
- * Visual language mirrors the frontend's "Waypoint" design tokens (frontend/src/styles/index.css) -
+ * Visual language mirrors the frontend's "Aura Ride" design tokens (frontend/src/styles/index.css) -
  * route-indigo / signal-amber / asphalt-ink - so an email and the in-app UI read as one product.
  */
 @Component

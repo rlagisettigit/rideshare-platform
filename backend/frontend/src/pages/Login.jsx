@@ -56,7 +56,7 @@ export default function Login() {
 
         <div className="auth-split-visual-content">
           <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </Link>
         </div>
 
@@ -72,7 +72,7 @@ export default function Login() {
 
       <div className="auth-split-form-panel">
         <div className="auth-card">
-          <h2>Sign in to Waypoint</h2>
+          <h2>Sign in to Aura Ride</h2>
           <p className="muted">Book a seat or publish a ride along your route.</p>
           <GoogleSignInButton onCredential={handleGoogleCredential} text="signin_with" />
           <div className="auth-divider">or sign in with email</div>

@@ -55,7 +55,7 @@ export default function CompleteProfile() {
     const clientErrors = {};
     if (!form.gender) clientErrors.gender = "Please select an option.";
     if (!isAtLeast18(form.dob)) {
-      clientErrors.dob = `You must be at least ${MINIMUM_AGE_YEARS} years old to use Waypoint.`;
+      clientErrors.dob = `You must be at least ${MINIMUM_AGE_YEARS} years old to use Aura Ride.`;
     }
     if (!agreedToTerms) {
       clientErrors.terms = "Please read and agree to the Terms & Conditions and Privacy Policy.";
@@ -91,7 +91,7 @@ export default function CompleteProfile() {
 
         <div className="auth-split-visual-content">
           <Link to="/" className="nav-brand" style={{ textDecoration: "none" }}>
-            Waypoint<span className="dot">•</span>
+            Aura Ride<span className="dot">•</span>
           </Link>
         </div>
 
@@ -130,7 +130,7 @@ export default function CompleteProfile() {
             <div className="field">
               <label htmlFor="dob">Date of birth</label>
               <input id="dob" type="date" max={maxDobForMinimumAge()} value={form.dob} onChange={update("dob")} required />
-              <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Waypoint.</span>
+              <span className="muted">You must be at least {MINIMUM_AGE_YEARS} to use Aura Ride.</span>
               {fieldErrors.dob && <div className="field-error">{fieldErrors.dob}</div>}
             </div>
 

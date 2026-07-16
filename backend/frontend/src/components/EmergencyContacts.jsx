@@ -2,7 +2,7 @@ const EMERGENCY_CONTACTS = [
   { icon: "🚓", label: "Police", number: "100", type: "emergency" },
   { icon: "🚒", label: "Fire", number: "101", type: "emergency" },
   { icon: "🚑", label: "Ambulance", number: "108", type: "emergency" },
-  { icon: "☎️", label: "Waypoint Support", number: "1800-123-4567", type: "internal" }
+  { icon: "☎️", label: "Aura Ride Support", number: "1800-123-4567", type: "internal" }
 ];
 
 export default function EmergencyContacts({ className = "" }) {
