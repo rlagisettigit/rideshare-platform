@@ -62,6 +62,11 @@ public class AuthService {
         user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
 
+        // FR-001 post-registration mobile verification: texted via MSG91 (see OtpService),
+        // confirmed later through POST /api/v1/auth/mobile/verify. Doesn't block login/tokens
+        // below - mobileVerified is a trust flag, not a signup gate.
+        otpService.issueOtp(user.getMobile(), "MOBILE_VERIFY");
+
         if (request.asDriver()) {
             // TEMPORARY: KYC onboarding/admin review UI isn't built yet, so auto-verify
             // drivers at signup to unblock vehicle registration and going online.
@@ -78,6 +83,15 @@ public class AuthService {
 
     public void requestOtp(OtpRequest request) {
         otpService.issueOtp(request.mobile(), request.purpose() == null ? "LOGIN" : request.purpose());
+    }
+
+    @Transactional
+    public void verifyMobile(VerifyMobileRequest request) {
+        otpService.verifyOtp(request.mobile(), "MOBILE_VERIFY", request.otp());
+        User user = userRepository.findByMobile(request.mobile())
+                .orElseThrow(() -> ApiException.notFound("USER_001", "User not found."));
+        user.setMobileVerified(true);
+        userRepository.save(user);
     }
 
     @Transactional

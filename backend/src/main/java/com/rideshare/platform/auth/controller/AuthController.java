@@ -30,6 +30,12 @@ public class AuthController {
         return ApiResponse.ok(null, "OTP sent.");
     }
 
+    @PostMapping("/mobile/verify")
+    public ApiResponse<Void> verifyMobile(@Valid @RequestBody VerifyMobileRequest request) {
+        authService.verifyMobile(request);
+        return ApiResponse.ok(null, "Mobile number verified.");
+    }
+
     @PostMapping("/login")
     public ApiResponse<TokenResponse> login(@RequestBody LoginRequest request) {
         return ApiResponse.ok(authService.login(request));

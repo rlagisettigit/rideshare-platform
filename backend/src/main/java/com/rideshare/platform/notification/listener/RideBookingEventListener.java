@@ -7,6 +7,7 @@ import com.rideshare.platform.config.KafkaTopics;
 import com.rideshare.platform.kafka.events.*;
 import com.rideshare.platform.notification.email.RideEmailService;
 import com.rideshare.platform.notification.service.NotificationDispatchService;
+import com.rideshare.platform.notification.sms.RideSmsService;
 import com.rideshare.platform.ride.entity.Ride;
 import com.rideshare.platform.ride.repository.RideRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * FR: Section 12 Notification Events - Ride Published, Booking Requested/Accepted/Cancelled,
  * Ride Started, Ride Completed. Consumes the domain events published by ride/booking services
- * and fans them out across notification channels: an in-app row (always) plus an email
+ * and fans them out across notification channels: an in-app row (always), an email
  * (RideEmailService, gated by EMAIL_NOTIFICATIONS_ENABLED / RESEND_API_KEY - see
- * ResendEmailClient) for every event that has a specific recipient.
+ * ResendEmailClient), and an SMS (RideSmsService, gated by SMS_NOTIFICATIONS_ENABLED /
+ * MSG91_AUTH_KEY - see Msg91SmsClient) for every event that has a specific recipient.
  */
 @Component
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class RideBookingEventListener {
 
     private final NotificationDispatchService dispatchService;
     private final RideEmailService emailService;
+    private final RideSmsService smsService;
     private final BookingRepository bookingRepository;
     private final RideRepository rideRepository;
 
@@ -47,6 +50,7 @@ public class RideBookingEventListener {
                             + ride.getOriginAddress() + " to " + ride.getDestinationAddress() + ".",
                     ride.getPublicId());
             emailService.bookingRequested(booking);
+            smsService.bookingRequested(booking);
         });
     }
 
@@ -61,6 +65,7 @@ public class RideBookingEventListener {
                             + ride.getDestinationAddress() + " has been confirmed.",
                     ride.getPublicId());
             emailService.bookingConfirmed(booking);
+            smsService.bookingConfirmed(booking);
         });
     }
 
@@ -75,6 +80,7 @@ public class RideBookingEventListener {
                             + ride.getDestinationAddress() + " wasn't accepted.",
                     ride.getPublicId());
             emailService.bookingRejected(booking);
+            smsService.bookingRejected(booking);
         });
     }
 
@@ -98,6 +104,7 @@ public class RideBookingEventListener {
                         ride.getPublicId());
             }
             emailService.bookingCancelled(booking, event.cancelledBy(), event.reason());
+            smsService.bookingCancelled(booking, event.cancelledBy(), event.reason());
         });
     }
 
@@ -108,7 +115,7 @@ public class RideBookingEventListener {
                 notifyConfirmedPassengers(ride, "RIDE_STARTED", "Your ride has started",
                         "Your driver has started the trip from " + ride.getOriginAddress()
                                 + " to " + ride.getDestinationAddress() + ".",
-                        emailService::rideStarted));
+                        booking -> { emailService.rideStarted(booking); smsService.rideStarted(booking); }));
     }
 
     @KafkaListener(topics = KafkaTopics.RIDE_COMPLETED, groupId = "notification-service")
@@ -138,6 +145,7 @@ public class RideBookingEventListener {
                 dispatchService.removeByReference(passengerId, ride.getPublicId(), "RIDE_STARTED");
                 dispatchService.send(passengerId, "IN_APP", eventType, title, body, ride.getPublicId());
                 emailService.rideCompleted(booking);
+                smsService.rideCompleted(booking);
             }
         }
     }

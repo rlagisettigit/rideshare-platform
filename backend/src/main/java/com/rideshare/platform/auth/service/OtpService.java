@@ -3,6 +3,7 @@ package com.rideshare.platform.auth.service;
 import com.rideshare.platform.auth.entity.OtpCode;
 import com.rideshare.platform.auth.repository.OtpCodeRepository;
 import com.rideshare.platform.common.exception.ApiException;
+import com.rideshare.platform.notification.sms.Msg91SmsClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,15 +12,16 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 /**
- * FR-002 Login (Mobile + OTP). In production this dispatches via the SMS Provider
- * integration (Section 12 Notification -> SMS channel); here it persists a hashed OTP
- * and returns a delivery acknowledgement.
+ * FR-002 Login (Mobile + OTP), FR-001 post-registration mobile verification. The OTP itself is
+ * generated and verified here (hashed at rest, single-use, time-boxed) - {@link Msg91SmsClient}
+ * is only the delivery channel, so a slow/failing MSG91 call never affects OTP correctness.
  */
 @Service
 @RequiredArgsConstructor
 public class OtpService {
 
     private final OtpCodeRepository otpCodeRepository;
+    private final Msg91SmsClient smsClient;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final int OTP_VALID_MINUTES = 5;
@@ -34,7 +36,7 @@ public class OtpService {
         otp.setExpiresAt(LocalDateTime.now().plusMinutes(OTP_VALID_MINUTES));
         otpCodeRepository.save(otp);
 
-        // TODO: dispatch `code` via SmsProvider integration (Kafka event -> notification-service)
+        smsClient.sendOtp(mobile, code);
     }
 
     public void verifyOtp(String mobile, String purpose, String code) {

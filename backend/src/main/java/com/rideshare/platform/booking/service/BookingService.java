@@ -14,6 +14,7 @@ import com.rideshare.platform.kafka.events.BookingAcceptedEvent;
 import com.rideshare.platform.kafka.events.BookingCancelledEvent;
 import com.rideshare.platform.kafka.events.BookingRejectedEvent;
 import com.rideshare.platform.kafka.events.BookingRequestedEvent;
+import com.rideshare.platform.notification.sms.RideSmsService;
 import com.rideshare.platform.payment.service.PaymentService;
 import com.rideshare.platform.pricing.dto.FareBreakdownResponse;
 import com.rideshare.platform.pricing.service.FareBreakdown;
@@ -53,6 +54,7 @@ public class BookingService {
     private final H3Service h3Service;
     private final DriverService driverService;
     private final PaymentService paymentService;
+    private final RideSmsService rideSmsService;
     private final WalletService walletService;
     private final RideFareEstimator rideFareEstimator;
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -232,6 +234,7 @@ public class BookingService {
                 bookingRepository.save(booking);
 
                 paymentService.capture(booking.getId(), booking.getFare(), "ride-completion:" + booking.getPublicId());
+                rideSmsService.paymentCompleted(booking);
                 walletService.credit(booking.getRide().getDriver().getUser().getId(), booking.getFare(),
                         "RIDE_FARE", booking.getPublicId());
             } else if (booking.getStatus() == BookingStatus.PENDING) {

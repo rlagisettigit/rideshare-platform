@@ -36,6 +36,11 @@ public class User extends BaseEntity {
     @Column(unique = true, length = 20)
     private String mobile;
 
+    // Set true once the post-registration OTP (delivered via MSG91, see OtpService /
+    // AuthService.verifyMobile) is confirmed. False for users with no mobile (social signup).
+    @Column(name = "mobile_verified", nullable = false)
+    private boolean mobileVerified = false;
+
     @Column(name = "password_hash")
     private String passwordHash;
 
